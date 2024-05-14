@@ -1,5 +1,5 @@
 ---
-title: KCD Shanghai 2024 Recap
+title: KCD 2024 SHANGHAI - 05 
 summary: 下文是我在线观看这场行业大会议题的简单介绍与梳理，主要包括Kubernetes调度与资源管理以及LLM相关的议题。
 date: 2024-04-25
 
@@ -41,7 +41,12 @@ tags:
 
 {{% callout note %}}
 1. k8s scheduler调度器调度性能的上限在1k pods/s。在性能方面，原生 Kubernetes 默认调度器在 5000 个节点的集群中只能实现每秒 10个Pod 左右的调度吞吐量。
-2. pod跟Node匹配在调度器中较为复杂。把这部分单独拆出来，单独成为组件scheduler，可以水平扩展。
+2. pod跟Node匹配在调度器中较为复杂。把这部分单独拆出来，单独成为组件scheduler，可以水平扩展。pod调度到节点和 抢占框架，Scheduler Framework有多个阶段，每个阶段都是pluggabled。
+   调度多组件横向扩展，会存在并发冲突的问题, 冲突的解决在binder这里收敛。
+3. dispatcher和 binder之所以是单组件，设计之初承接量是比较小的，可以保证吞吐相对符合要求。dispatcher需要为pod选择合适的scheduler进行调度决策。
+4. scheduler分两层调度，unit scheduling和 pod scheduling。  <mark> 每个scheduler都有自己的全局view </mark>
+   比如：离线业务 pod group gang语义的pod、ML训练任务job级别的语义、比如：训练池里的pod都在一个网段/交换机/机型。
+5. 把Pod的状态分成三部分，dispatcher获取到pending状态的pods, 
 {{% /callout %}}
 
 ### Dispatcher：应用排队、分发、节点分区。
@@ -57,10 +62,10 @@ Dispatcher的作用是为不同的pod找到合适scheduler进行调度。
   如果Node增删或者Scheduler个数变化，会基于实际情况重新分配节点；Partition规则现在是基于Scheduler个数平均分配，后面会增强，Partition策略可配置;
 * Scheduler Maintainer：主要负责对Scheduler实例状态进行维护，包括Scheduler实例健康状况，负载情况，Partition节点数等；
 
-{{% callout note %}}
-1. dispatcher和 binder之所以是单组件，设计之初承接量是比较小的，可以保证吞吐相对符合要求。
-2. scheduler分两层调度，unit scheduling和 pod scheduling。  <mark> 每个scheduler都有自己的全局view </mark>
-   比如：离线业务 podgroup gang语义的pod、训练任务job级别的语义、比如：训练池里的pod都在一个网段/交换机/机型。
+{{% callout  note %}}
+1. SortedQueue目前是一个FIFO队列，后续会抽象成Sorting PolicyManager。使用一个goroutine循环pop queue中的数据，分发到不同的scheduler。
+2. Store缓存了调度器信息， 后续会在主流程上游添加sorting policy和dispatching policy，抽象成对应的Manager。
+3. 目前scheduler maintainer和 store中都保存scheduler信息，后续会去掉store这部分，直接使用scheduler maintainer中的信息。
 {{% /callout %}} 
  
 ### Scheduler：具体调度和抢占决策
@@ -80,23 +85,45 @@ Scheduler 主要负责为应用做出具体的 调度和抢占决策，但是不
   - Filtering plugins：基于应用请求，过滤掉不符合要求的节点；
   - Scoring plugins：对上面筛选出来的节点进行打分，选出最合适的节点；
 
-- Unit Preempting：上面阶段无法调度，则会进入抢占阶段，尝试为待调度应用去抢占正在运行的应用实例。该阶段也有两类插件：
+- Unit Preempting：上面阶段无法调度，则会进入**抢占阶段**，尝试为待调度应用去抢占正在运行的应用实例。该阶段也有两类插件：
   - Victim Searching： 遍历集群节点，尝试搜索 victims （被抢占应用），看是否能找到节点和 victims；
   - Candidates Sorting：如果上面步骤找到了合适的节点和 victims，则会为这些 victims 进行排序（节点粒度），选出最合适的节点和 victims；
 
-{{% callout note %}}
-1. pod调度到节点和 抢占框架，Scheduler Framework有多个阶段，每个阶段都是pluggabled。 
-   调度多组件横向扩展，会存在并发冲突的问题, 冲突的解决在binder这里收敛。pod之上，设计了一层unit。抢占实现融合到一起，
+{{% callout note %}} 
+1. 存在Node Organizing的原因是，加快node的匹配过程。诸如: 
+1) daemonset pod通过node affinity去进行节点的过滤，但仍然需要遍历所有Node节点。
+2) 将vk场景的node匹配操作前置，加快node的匹配过程。
+2. 通常情况会把一个集群划作一个Node Group，还有一些其他的划分像 同一个网段下的Node也划分一个Node Group。
 {{% /callout %}}
-
 ### Binder：冲突检查、抢占操作、应用绑定
 
 {{< figure src="binder.png" caption="详细设计binder" theme="light" >}}
 
+Binder 主要负责乐观冲突检查，执行具体的抢占操作（删除 victims），进行应用绑定前的准备工作，比如动态创建存储卷等，以及最终执行绑定操作。
+Binder 主要有 ConflictResolver, PreemptionExecutor 和 UnitBinder 三部分组成。
+
+-  ConflictResolver: 主要负责并发冲突检查，一旦发现冲突，立即打回，重新调度；Conflict resolver 有两大
+类： Cross node conflict resolver 以及 Single node conflict resolver
+  - Cross node conflict resolver: 负责检查跨节点冲突，比如： 某个拓扑域调度限制是否仍然能满足等， 
+    由于该节点跨节点，Binder 必须串行执行；
+  - Single node conflict resolver: 单节点内冲突检查，比如： 节点资源是否仍然足够等，该节点检查的逻
+    辑限制在节点内部，所以不同节点的检查可以并发执行（unit 内 pods 调度到不同节点）；
+- PreemptionExecutorperator: 如果没有冲突，同时应用需要抢占，则执行抢占操作，删除 victims，等待最终调度；
+  - UnitBinder: 主要负责绑定前准备工作，比如：创建 volume 等，以及执行真正的绑定操作。
+    现在的版本，Binder 里面还耦合了一个 PodGroup controller 实现，负责维护 PodGroup 的状态以及生命周期，
+    后面会从 Binder 里面移除，独立成一个 Controller。
+
+{{% callout note %}}
+1. cross Node的冲突检查，需要串行执行。
+2. 每一步的操作失败后，会打回，重新调度。
+{{% /callout %}}
+
 ## Part 03: 内部实践
+{{< figure src="services.png" caption="支撑的业务" theme="light" >}}
+
 * 支撑的业务：微服务、有状态服务、大数据、机器学习等。
 * 单集群规模：2w节点、100w Pod。
-* 性能：单Scheduler实例高峰调度吞吐2k+ pods/s，多实例4k+ pods/s。
+* 性能：单Scheduler实例高峰调度吞吐2k+ pods/s，多(3)实例4k+ pods/s。（实例数越多，冲突会更多，吞吐可能会下降。）
 * 在离线资源流转达到从周级别到分钟级别的优化。
 * 资源利用率
   * CPU利用率微服务常态60%+, 推广周40%左右(需要微拓扑绑定NUMA,无法shareCPU)。
