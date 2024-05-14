@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Home | zy.chat</title>
-    <link>https://example.com/</link>
-      <atom:link href="https://example.com/index.xml" rel="self" type="application/rss+xml" />
-    <description>Home</description>
-    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Tue, 24 Oct 2023 00:00:00 +0000</lastBuildDate>
+    <title>Markdown | zy.chat</title>
+    <link>https://example.com/tags/markdown/</link>
+      <atom:link href="https://example.com/tags/markdown/index.xml" rel="self" type="application/rss+xml" />
+    <description>Markdown</description>
+    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Fri, 27 Oct 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://example.com/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png</url>
-      <title>Home</title>
-      <link>https://example.com/</link>
+      <title>Markdown</title>
+      <link>https://example.com/tags/markdown/</link>
     </image>
     
     <item>
@@ -89,30 +89,6 @@
 &lt;p&gt;Copyright 2016-present &lt;a href=&#34;https://georgecushen.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;George Cushen&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Released under the &lt;a href=&#34;https://github.com/HugoBlox/hugo-blox-builder/blob/main/LICENSE.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;MIT&lt;/a&gt; license.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>experience</title>
-      <link>https://example.com/projects/</link>
-      <pubDate>Tue, 24 Oct 2023 00:00:00 +0000</pubDate>
-      <guid>https://example.com/projects/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Experience</title>
-      <link>https://example.com/experience/</link>
-      <pubDate>Tue, 24 Oct 2023 00:00:00 +0000</pubDate>
-      <guid>https://example.com/experience/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://example.com/uses/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://example.com/uses/</guid>
-      <description></description>
     </item>
     
   </channel>

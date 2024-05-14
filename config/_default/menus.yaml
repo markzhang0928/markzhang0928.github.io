@@ -7,6 +7,9 @@ main:
   - name: Bio
     url: /
     weight: 10
+  - name: Blog
+    url: post/
+    weight: 20
   - name: Experience
     url: experience/
     weight: 30
