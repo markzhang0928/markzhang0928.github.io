@@ -17,7 +17,7 @@ status:
 superuser: true
 
 # Role/position/tagline
-role: 资深平台开发工程师
+role: .
 
 # Organizations/Affiliations to display in Biography blox
 organizations:
@@ -50,52 +50,6 @@ education:
     summary: |
       GPA: 85.7/100 Ranked: 6/133
       
-work:
-  - position: 资深平台开发工程师
-    company_name: 网易游戏-技术中心
-    company_url: ''
-    company_logo: ''
-    date_start: 2021-09-01
-    date_end: ''
-    summary: |2-
-      职责:
-      - 负责网易游戏互娱CI平台的研发工作。
-      - 负责网易游戏互娱SVN平台的重构。
-      
-  - position: 高级研发工程师
-    company_name: 腾讯CSIG-云产品部
-    company_url: ''
-    company_logo: ''
-    date_start: 2020-05-01
-    date_end: 2021-08-01
-    summary: |2-
-      职责: 
-      - 负责云函数核心方向关键功能的研发。
-      
-  - position: 系统研发工程师
-    company_name: 虎牙直播-基础保障部
-    company_url: ''
-    company_logo: ''
-    date_start: 2019-02-01
-    date_end: 2020-04-01
-    summary: |2-
-      职责:
-      - 负责 基于k8s的容器平台核心方向(平台稳定性)的研发，解决产品容器化落地中遇到的技术难题。
-      - 负责 建设混合云容器工具链 huyactl-debug 项目。
-      - 制定并实施平台组件的版本发布上线规范，完善项目自动构建流程。
-      
-  - position: 资深基础架构工程师
-    company_name: 网易游戏-运维与基础架构部
-    company_url: ''
-    company_logo: ''
-    date_start: 2015-06-01
-    date_end: 2018-09-01
-    summary: |2-
-      职责:
-      - 从无到有落地网易游戏内部使用的高可用镜像服务，提供统一镜像下载中心，实现基于RBAC的访问权限控制。
-      - 负责 网易游戏运维与基础架构部的CI构建平台。
-      - 负责 网易游戏互娱gitlab代码仓库的维护和平台开发工作。
-
 
 # Skills
 # Add your own SVG icons to `assets/media/icons/`
@@ -158,9 +112,8 @@ awards:
 ## 
 张怡, 资深后台研发工程师，7年DevOps领域(golang)平台研发经验、擅长从源码快速定位并解决问题。
 
-早期(2015-2020)专注在容器PaaS领域，在docker、k8s开源软件/系统上，积累了深入的PaaS平台研发经验。
+早期(2015-2020)专注在容器PaaS领域，在docker、k8s开源软件/系统上，积累了丰富的PaaS平台研发运维经验。
 
-曾在网易游戏、虎牙直播、腾讯担任后台研发工程师，对容器服务平台、serverless平台、持续集成平台有丰富的实践经验。
+曾在网易游戏、虎牙直播、腾讯担任后台研发工程师，对容器服务平台、serverless平台、平台工程方向均有实践经验。
 
-定居广州。热爱编码。
 

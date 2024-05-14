@@ -13,8 +13,8 @@ tags:
 ---
 
 ## 05 - Godel Scheduler：字节开源内部超大规模在离线统一调度器 - 任玉泉，字节跳动
-演讲者为来自字节跳动的任玉泉，他向我们介绍了字节跳动内部开源的基于 Kubernetes 的大规模在离线统一调度系统Godel Scheduler的研发背景、
-详细设计、内部实践以及后续开源的一系列规划
+演讲者为来自字节跳动的任玉泉，他向我们介绍了字节跳动内部基于 Kubernetes 的大规模在离线统一调度系统Godel Scheduler的研发背景、
+详细设计、内部实践以及后续开源的一系列规划。
 
 ## Part 01: 研发背景
 业务需要：解决离线两套系统混部导致的资源成本和效率问题。
@@ -40,7 +40,7 @@ tags:
 * 基于K8S系统：完全兼容K8S生态。
 
 {{% callout note %}}
-1. k8s scheduler调度器调度性能的上限在1kpod/s。在性能方面，原生 Kubernetes 默认调度器在 5000 个节点的集群中只能实现每秒 10 个 Pod 左右的调度吞吐量。
+1. k8s scheduler调度器调度性能的上限在1k pods/s。在性能方面，原生 Kubernetes 默认调度器在 5000 个节点的集群中只能实现每秒 10个Pod 左右的调度吞吐量。
 2. pod跟Node匹配在调度器中较为复杂。把这部分单独拆出来，单独成为组件scheduler，可以水平扩展。
 {{% /callout %}}
 
@@ -52,13 +52,16 @@ Dispatcher的作用是为不同的pod找到合适scheduler进行调度。
 它主要由几个部分构成：Sorting Policy Manager, Dispatching Policy Manager, Node Shuffler, Scheduler Maintainer 和Reconciler。其中，
 * Sort Policy Manager: 主要负责对应用进行排队，现在实现了如下排队策略， 如：FIFO，DRF/FairShare（没上生产环境）。后面会添加更多排队策略，如：priority value based等
 * Dispatching Policy Manager: 主要负责分发应用到不同的Scheduler实例，现阶段是默认策略：LoadBalance（根据scheduler的负载，去平衡负责）， 后面会增强该功能，做成插件化配置模式；比如：gang pod group需要保证里面的pod都分配到一个scheduler。
-* Node Shuffler：主要负责基于Scheduler实例个数，对集群节点进行Partition分组，每个节点在一个Partition里面，每个Scheduler实例对应一个Partition，Scheduler调度的时候会优先选择自己Partition节点，没有合适的情况下，才会去其他Partition节点。如果Node增删或者Scheduler个数变化，会基于实际情况重新分配节点；Partition规则现在是基于Scheduler个数平均分配，后面会增强，Partition策略可配置;  每个scheduler都有自己的全局view，
+* Node Shuffler：主要负责基于Scheduler实例个数，对集群节点进行Partition分组，每个节点在一个Partition里面，每个Scheduler实例对应一个Partition，
+  Scheduler调度的时候会优先选择自己Partition节点，没有合适的情况下，才会去其他Partition节点。
+  如果Node增删或者Scheduler个数变化，会基于实际情况重新分配节点；Partition规则现在是基于Scheduler个数平均分配，后面会增强，Partition策略可配置;
 * Scheduler Maintainer：主要负责对Scheduler实例状态进行维护，包括Scheduler实例健康状况，负载情况，Partition节点数等；
 
 {{% callout note %}}
 1. dispatcher和 binder之所以是单组件，设计之初承接量是比较小的，可以保证吞吐相对符合要求。
-2. scheduler分两层调度，unit scheduling和 pod scheduling。比如：离线业务 podgroup 的gang语义的pod、训练任务job级别的语义、比如：训练池里的pod都在一个网段/交换机/机型。
-{{% /callout %}}
+2. scheduler分两层调度，unit scheduling和 pod scheduling。  <mark> 每个scheduler都有自己的全局view </mark>
+   比如：离线业务 podgroup gang语义的pod、训练任务job级别的语义、比如：训练池里的pod都在一个网段/交换机/机型。
+{{% /callout %}} 
  
 ### Scheduler：具体调度和抢占决策
 
@@ -82,19 +85,26 @@ Scheduler 主要负责为应用做出具体的 调度和抢占决策，但是不
   - Candidates Sorting：如果上面步骤找到了合适的节点和 victims，则会为这些 victims 进行排序（节点粒度），选出最合适的节点和 victims；
 
 {{% callout note %}}
-1. 冲突的解决在binder这里收敛。pod之上，设计了一层unit。抢占实现融合到一起，
+1. pod调度到节点和 抢占框架，Scheduler Framework有多个阶段，每个阶段都是pluggabled。 
+   调度多组件横向扩展，会存在并发冲突的问题, 冲突的解决在binder这里收敛。pod之上，设计了一层unit。抢占实现融合到一起，
 {{% /callout %}}
 
 ### Binder：冲突检查、抢占操作、应用绑定
+
 {{< figure src="binder.png" caption="详细设计binder" theme="light" >}}
 
 ## Part 03: 内部实践
 * 支撑的业务：微服务、有状态服务、大数据、机器学习等。
 * 单集群规模：2w节点、100w Pod。
 * 性能：单Scheduler实例高峰调度吞吐2k+ pods/s，多实例4k+ pods/s。
+* 在离线资源流转达到从周级别到分钟级别的优化。
+* 资源利用率
+  * CPU利用率微服务常态60%+, 推广周40%左右(需要微拓扑绑定NUMA,无法shareCPU)。
+  * 7W张GPU卡，利用率95%以上。
 
 ## Part 04: 未来工作
-已经开源：持续投入、合作共建、丰富功能和完善文档。
+已经开源：持续投入(非KPI项目)、合作共建、丰富功能和完善文档。
+
 时间表：
 - 2024 Q1：实时数据接入、文档完善。
 - 2024 Q2：资源预留。
