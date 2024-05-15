@@ -91,10 +91,11 @@ Scheduler 主要负责为应用做出具体的 调度和抢占决策，但是不
 
 {{% callout note %}} 
 1. 存在Node Organizing的原因是，加快node的匹配过程。诸如: 
-1) daemonset pod通过node affinity去进行节点的过滤，但仍然需要遍历所有Node节点。
-2) 将vk场景的node匹配操作前置，加快node的匹配过程。
+  - daemonset pod通过node affinity去进行节点的过滤，但仍然需要遍历所有Node节点。
+  - 将vk场景的node匹配操作前置，加快node的匹配过程。
 2. 通常情况会把一个集群划作一个Node Group，还有一些其他的划分像 同一个网段下的Node也划分一个Node Group。
 {{% /callout %}}
+
 ### Binder：冲突检查、抢占操作、应用绑定
 
 {{< figure src="binder.png" caption="详细设计binder" theme="light" >}}
@@ -102,19 +103,19 @@ Scheduler 主要负责为应用做出具体的 调度和抢占决策，但是不
 Binder 主要负责乐观冲突检查，执行具体的抢占操作（删除 victims），进行应用绑定前的准备工作，比如动态创建存储卷等，以及最终执行绑定操作。
 Binder 主要有 ConflictResolver, PreemptionExecutor 和 UnitBinder 三部分组成。
 
--  ConflictResolver: 主要负责并发冲突检查，一旦发现冲突，立即打回，重新调度；Conflict resolver 有两大
-类： Cross node conflict resolver 以及 Single node conflict resolver
-  - Cross node conflict resolver: 负责检查跨节点冲突，比如： 某个拓扑域调度限制是否仍然能满足等， 
-    由于该节点跨节点，Binder 必须串行执行；
-  - Single node conflict resolver: 单节点内冲突检查，比如： 节点资源是否仍然足够等，该节点检查的逻
-    辑限制在节点内部，所以不同节点的检查可以并发执行（unit 内 pods 调度到不同节点）；
+-  ConflictResolver: 主要负责并发冲突检查，一旦发现冲突，立即打回，重新调度；
+  - 冲突检查分为两类：Cross node conflict resolver 和 Single node conflict resolver。
+    - Cross node conflict resolver: 负责检查跨节点冲突，比如： 某个拓扑域调度限制是否仍然能满足等， 
+      由于该节点跨节点，Binder 必须串行执行；
+    - Single node conflict resolver: 单节点内冲突检查，比如： 节点资源是否仍然足够等，该节点检查的逻
+      辑限制在节点内部，所以不同节点的检查可以并发执行（unit 内 pods 调度到不同节点）；
 - PreemptionExecutorperator: 如果没有冲突，同时应用需要抢占，则执行抢占操作，删除 victims，等待最终调度；
   - UnitBinder: 主要负责绑定前准备工作，比如：创建 volume 等，以及执行真正的绑定操作。
     现在的版本，Binder 里面还耦合了一个 PodGroup controller 实现，负责维护 PodGroup 的状态以及生命周期，
     后面会从 Binder 里面移除，独立成一个 Controller。
 
 {{% callout note %}}
-1. cross Node的冲突检查，需要串行执行。
+1. CrossNode的冲突检查，需要串行执行。
 2. 每一步的操作失败后，会打回，重新调度。
 {{% /callout %}}
 
