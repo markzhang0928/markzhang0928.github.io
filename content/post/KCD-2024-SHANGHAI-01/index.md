@@ -103,9 +103,9 @@ ORM: [Out-of-Band Resource Manager](https://github.com/kubewharf/katalyst-core/i
 {{< figure src="nri.png" caption="" theme="light" >}}
 
 {{% callout note %}}
-a. 方案一 CRI proxy (Intel)：hook相应的容器/Pod事件，对原生组件有侵入性修改。
-b. 方案二 Node Agent：异步更新，时效性不高。
-c. 方案三 katalyst (Kubelet增强机制)：调用plugin agent，时效性高。但对上游kubelet侵入修改。
+- a. 方案一 CRI proxy (Intel)：hook相应的容器/Pod事件，对原生组件有侵入性修改。
+- b. 方案二 Node Agent：异步更新，时效性不高。
+- c. 方案三 katalyst (Kubelet增强机制)：调用plugin agent，时效性高。但对上游kubelet侵入修改。
 {{% /callout %}}
 
 #### NRI插件运行机制
@@ -134,3 +134,14 @@ c. 方案三 katalyst (Kubelet增强机制)：调用plugin agent，时效性高�
 
 
 ### 社区建设
+
+* Github仓库：
+  [kubewharf/katalyst-core](https://github.com/kubewharf/katalyst-core)
+  [containerd/nri](https://github.com/containerd/nri)
+  [containers/nri-plugins](https://github.com/containers/nri-plugins)
+
+* 相关 KubeCon 演讲：
+* [Advancing Memory Management in Kubernetes: Next Steps with Memory QoS - Dixita Narang, Google & Antti Kervinen, Intel, KubeCon NA 2023](https://kccncna2023.sched.com/event/1R2nL)
+* [使用可插拔和可定制的智能运行时提升工作负载的QoS | Enhance Workload QoS with Pluggable and Customizable Smarter Runtimes - Rougang Han, Alibaba & Kang Zhang, Intel](https://kccncosschn2023.sched.com/event/1PTH5)
+* [NRI: Extending Containerd And CRI-O With Common Plugins - Krisztian Litkey, Intel & Mike Brown, IBM, KubeCon NA 2022](https://kccncna2022.sched.com/event/182JT)
+* [Maximizing Workload’s Performance With Smarter Runtimes - Krisztian Litkey & Alexander Kanevskiy, Intel, KubeCon EU 2021](https://kccnceu2021.sched.com/event/iE1Y)
