@@ -20,7 +20,7 @@ sections:
             - 提供生产级的用户操作日志和监控metrics可视化。"
           
           image: operator.png
-          url: https://github.com/markzhang95/svn-operator
+          url: https://github.com/markzhang0928/svn-operator
         - title: Linux内核脉络梳理
           description:  ""
 
