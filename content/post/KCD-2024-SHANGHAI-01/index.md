@@ -1,5 +1,5 @@
 ---
-title: KCD 2024 SHANGHAI - 01
+title: KCD 2024 SHANGHAI - 01 Katalyst & NRI
 summary: 两位演讲者分别是来自字节跳动的曹贺与来自 Intel 的任强，他们分别介绍了字节跳动开源的 Katalyst 以及其插件化的资源管理机制、CRI 扩展框架 NRI 以及 Katalyst 基于 NRI 的优化。
 date: 2024-05-19
 

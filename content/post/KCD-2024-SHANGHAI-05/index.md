@@ -1,5 +1,5 @@
 ---
-title: KCD 2024 SHANGHAI - 05 
+title: KCD 2024 SHANGHAI - 05 Godel Scheduler
 summary: 下文是我在线观看这场行业大会议题的简单介绍与梳理，主要包括Kubernetes调度与资源管理以及LLM相关的议题。
 date: 2024-04-25
 

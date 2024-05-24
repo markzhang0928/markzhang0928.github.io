@@ -1,5 +1,5 @@
 ---
-title: KCD 2024 SHANGHAI - 04 AICloud
+title: KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway & Kong Gateway Operator
 summary: 演讲者主要介绍了AI gateway的特性, 给出了Kong GatewayOperator项目的一页PPT介绍。
 date: 2024-05-24
 
