@@ -1,18 +1,19 @@
 ---
 title: Golang 切片Slice源码走读
-summary: 本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，仅供个人学习使用，如侵可删。
+summary: 本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用，如侵可删。
 date: 2024-05-31
 
 authors:
   - admin
 
 tags:
-  - Golang
-  - Data Structure
+  - Golang Slice
+  - Data Types
 ---
 
 
 切片slice是golang中非常经典的数据结构，其定位可以类比其他语言中的动态数组。	切片中的元素存放在一块内存地址连续的区域，使用索引可以快速检索到指定位置的元素；切片长度和容量是可变的，在使用过程中可以根据需要进行扩容。
+本文对应的Golang版本是1.21.9
 
 
 ### 数据结构
@@ -233,4 +234,5 @@ func Test_slice(t *testing.T) {
 
 注意: 
 1. 关于slice的切割赋值，如果cap比较大，仍然会导致高内存消耗，有内存泄漏的风险。此时，应该使用copy(src, dst)函数进行拷贝。
+2. Slice并非并发安全的数据结构，使用时需要注意并发安全的问题。
 ``` 
