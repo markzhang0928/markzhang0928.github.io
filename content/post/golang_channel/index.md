@@ -337,7 +337,7 @@ func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
 ## 读流程 (接收过程)
 
 ### 读空channel
-chanrecv 函数接受channel c的元素并将其写入ep指向的内存地址。
+chanrecv 函数接收channel c的元素并将其写入ep指向的内存地址。
 
 ```golang
 func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
@@ -368,7 +368,7 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 	}
 ```
 1) 关闭nil channel，会产生panic
-2) 空channel，直接阻塞
+2) empty(c): 用来判断channel是否应该被阻塞，当channel为空时，会被block。
 
 ### channel 已关闭且内部无元素
 ```golang
@@ -532,12 +532,96 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 5) 倘若协程从 park 中被唤醒，则回收 sudog（sudog能被唤醒，其对应的元素必然已经被写入）；
 
 ## 关闭 channel流程
+```golang
+func closechan(c *hchan) {
+	if c == nil {
+		panic(plainError("close of nil channel"))
+	}
 
-### 已关闭的通道读数据
+	lock(&c.lock) // 上锁
+	if c.closed != 0 { // 如果 channel 已经关闭
+		unlock(&c.lock)
+		panic(plainError("close of closed channel"))
+	}
+
+	if raceenabled {
+		callerpc := getcallerpc()
+		racewritepc(c.raceaddr(), callerpc, abi.FuncPCABIInternal(closechan))
+		racerelease(c.raceaddr())
+	}
+
+	c.closed = 1 // 修改关闭状态，指示channel已关闭
+
+	var glist gList
+
+	// 将 channel 所有等待接收队列里的 sudog 释放
+	for {
+		sg := c.recvq.dequeue() // 从接收队列里出队一个元素
+		if sg == nil { // 出队完毕，退出循环
+			break
+		}
+		if sg.elem != nil {
+			typedmemclr(c.elemtype, sg.elem)
+			sg.elem = nil
+		}
+		if sg.releasetime != 0 {
+			sg.releasetime = cputicks()
+		}
+		gp := sg.g
+		gp.param = unsafe.Pointer(sg)
+		sg.success = false
+		if raceenabled {
+			raceacquireg(gp, c.raceaddr())
+		}
+		glist.push(gp)
+	}
+
+	// 将channel等待发送队列里的 sudog 释放
+	for {
+		// 从发送队列里出队一个sudog
+		sg := c.sendq.dequeue()
+		if sg == nil {
+			break
+		}
+		// 发送者会panic
+		sg.elem = nil
+		if sg.releasetime != 0 {
+			sg.releasetime = cputicks()
+		}
+		gp := sg.g
+		gp.param = unsafe.Pointer(sg)
+		sg.success = false
+		if raceenabled {
+			raceacquireg(gp, c.raceaddr())
+		}
+		glist.push(gp)
+	}
+	unlock(&c.lock) // 解锁
+
+	// Ready all Gs now that we've dropped the channel lock.
+	for !glist.empty() {
+		gp := glist.pop()
+		gp.schedlink = 0
+		goready(gp, 3)
+	}
+}
+
+```
+1）当关闭一个channel时，会根据sendq 和recvq中阻塞的goroutine 进行不同处理。
+- 1.1 等待接收者而言，会收到一个相应类型的零值，比如chan int 会收到int类型的0。
+- 1.2 等待发送者而言，会直接panic。
+
 
 ### 优雅关闭通道
+1. 不要在接收方关闭通道。
+2. 不要向已关闭的通道发送数据，不要重复关闭通道。
+3. 如果通道有多个发送方，不要关闭通道。
 
 ## 总结
-
+| 操作      | nil channel | closed channel | not nil, not closed channel                                                   |
+|---------|------------|---------------|-------------------------------------------------------------------------------|
+| close   | panic      | panic         | 正常关闭                                                                          |
+| 读 <- ch | 阻塞(死锁)     | 读到对应类型的零值   | 阻塞或正常读取数据。 <br/>1) 缓冲型channel为空，会阻塞。<br/> 2) 非缓冲型channel没有等待的发送者时，会阻塞。  |
+| 写 ch <- | 阻塞(死锁)     | panic         | 阻塞或正常写入数据。<br/> 1) 缓冲型channel buf满时, 会阻塞。 <br/> 2) 非缓冲型channel 没有等待的接收者时，会阻塞。 |
 
 
