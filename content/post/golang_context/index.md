@@ -1,7 +1,7 @@
 ---
 title: Goroutine 上下文context源码走读
 summary: 本文是对Goroutine context的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。
-date: 2024-06-03
+date: 2024-06-12
 
 authors:
   - admin
@@ -70,9 +70,12 @@ type Context interface {
 context的实现定义了接口，实现这些接口函数的类均被当作context的一种。
 
 • Deadline()：该方法返回一个deadline代表context 的过期时间，标识是否已设置deadline的bool值；
+
 • Done()：该方法返回一个context 的只读channel，需要在select-case语句中使用，如 case <- context.Done(): 
+
 • Err()：返回context被关闭的原因；关闭原因由context控制，不需要用户设置。
   比如：1. 因deadline关闭: context deadline exceeded; 2. 因主动关闭: context canceled; 
+
 • Value()：该方法用于根据key值返回查询map中的value， context 中的对应 key 的值.
 
 context 源码主要包括几个关键结构体，分别实现了Context类和 canceler类
@@ -113,9 +116,13 @@ func (todoCtx) String() string {
 }
 ```
 • emptyCtx 是一个空的 context，本质上类型为一个整型；
+
 • Deadline() 方法会返回一个公元元年时间以及 false 的 flag，标识当前 context 不存在过期时间；
+
 • Done() 方法返回一个 nil 值，用户无论往 nil 中写入或者读取数据，均会陷入阻塞；
+
 • Err() 方法返回的错误永远为 nil；
+
 • Value() 方法返回的 value 同样永远为 nil.
 
 ### 2. cancelCtx: 
@@ -139,8 +146,11 @@ type canceler interface {
 
 ```
 • Done() 方法返回一个channel, channel一旦关闭，就会读出零值。cancelCtx.done的值一般经历如下三个阶段: nil -> chan struct{} -> closed chan
+
 • Err() 方法返回一个error告知context被关闭的原因即可，cancelCtx来说只需要返回成员变量err。
+
 • Value() 方法返回context中对应key的value值。如果key指定为&cancelCtxKey, 则返回cancelCtx自身的指针；
+
 • 未实现Deadline()方法，仅嵌套了一个带有deadline方法的Context。
 
 
@@ -185,14 +195,16 @@ func (c *cancelCtx) cancel(removeFromParent bool, err, cause error) {
 }
 ```
 •  cancel方法的作用是关闭c.done；递归地取消所有子节点；从父节点从删除自己；
+
 •  作用：通过关闭channel，将取消信号传递给它的所有子节点; 
+
 •  goroutine收到取消信号的方式，是select语句中读c.done分支被选中；
 
-注意: 
-1. context本身并没有取消函数，取消函数只能由外层函数调用，防止子节点context调用取消函数，从而严格控制信息的流向：由父节点context流向子节点context。
-2. 
+注意:
+1) context本身并没有取消函数，取消函数只能由外层函数调用，防止子节点context调用取消函数，从而严格控制信息的流向：由父节点context流向子节点context。
 
-3. timeCtx: 用来表示自动cancel的最终时间，
+
+### 3. timeCtx: 用来表示自动cancel的最终时间，
 ```golang
 type timerCtx struct {
   cancelCtx
@@ -202,9 +214,11 @@ type timerCtx struct {
 }
 ```
 • Deadline()方法 返回timeCtx.deadline过期时间, 而timerCtx.deadline 是WithDeadline() 或 WithTimeout()方法设置的。
+
 • cancel()基本继承cancelCtx, 只需额外关闭timer，当timerCtx被关闭时，timerCtx.cancelCtx.err存储关闭原因。
 
-4. valueCtx: 只能存一个kv对，不支持key去重，当前 valueCtx 的 key 不等于用户传入的 key，则从 parent context 中依次向上寻找。
+### 4. valueCtx: 
+只能存一个kv对，不支持key去重，当前 valueCtx 的 key 不等于用户传入的 key，则从 parent context 中依次向上寻找。
 
 
 ## Go官方文档的基本建议
