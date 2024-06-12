@@ -607,7 +607,7 @@ func closechan(c *hchan) {
 }
 
 ```
-1）当关闭一个channel时，会根据sendq 和recvq中阻塞的goroutine 进行不同处理。
+1）当关闭一个channel时，会根据sendq 和recvq中阻塞的goroutine 队列进行不同处理。
 - 1.1 等待接收者而言，会收到一个相应类型的零值，比如chan int 会收到int类型的0。
 - 1.2 等待发送者而言，会直接panic。
 
@@ -618,10 +618,14 @@ func closechan(c *hchan) {
 3. 如果通道有多个发送方，不要关闭通道。
 
 ## 总结
+1. 读、写、关闭操作的场景:
 | 操作      | nil channel | closed channel | not nil, not closed channel                                                   |
 |---------|------------|---------------|-------------------------------------------------------------------------------|
 | close   | panic      | panic         | 正常关闭                                                                          |
 | 读 <- ch | 阻塞(死锁)     | 读到对应类型的零值   | 阻塞或正常读取数据。 <br/>1) 缓冲型channel为空，会阻塞。<br/> 2) 非缓冲型channel没有等待的发送者时，会阻塞。  |
 | 写 ch <- | 阻塞(死锁)     | panic         | 阻塞或正常写入数据。<br/> 1) 缓冲型channel buf满时, 会阻塞。 <br/> 2) 非缓冲型channel 没有等待的接收者时，会阻塞。 |
 
+2. 判断channel和 mutex的使用时机，一般遵循如下原则：
+- 1. 并行的goroutines 使用互斥锁mutex进行同步控制其共享状态或访问共享资源。(互斥锁确保对资源的独占访问)
+- 2. 并发的goroutines 使用通道channel进行协作或所有权转移。(需要channel进行通信，channel是goroutine之间协作的桥梁)
 
