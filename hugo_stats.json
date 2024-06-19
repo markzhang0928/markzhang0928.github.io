@@ -67,6 +67,7 @@
       "bg-primary-700",
       "bg-transparent",
       "bg-white",
+      "bg-yellow-100",
       "bg-zinc-100",
       "bg-zinc-50",
       "block",
@@ -82,6 +83,7 @@
       "dark:bg-primary-600",
       "dark:bg-primary-900",
       "dark:bg-slate-900",
+      "dark:bg-yellow-900",
       "dark:bg-zinc-800",
       "dark:bg-zinc-800/50",
       "dark:block",
@@ -299,6 +301,7 @@
       "text-primary-400",
       "text-primary-500",
       "text-primary-800",
+      "text-red-400",
       "text-right",
       "text-slate-700",
       "text-sm",
@@ -312,7 +315,6 @@
       "transition",
       "transition-transform",
       "uppercase",
-      "w-100",
       "w-24",
       "w-4",
       "w-6",
@@ -325,6 +327,7 @@
       "z-20"
     ],
     "ids": [
+      "-缺点",
       "01---基于nri实现精细化且可拔插的容器资源管理---曹贺-任强",
       "05---godel-scheduler字节开源内部超大规模在离线统一调度器---任玉泉字节跳动",
       "1-emptyctx-contextbackgroud--contexttodo-实现了emptyctx类",
@@ -393,6 +396,7 @@
       "切片扩容",
       "切片拷贝",
       "初始化",
+      "功能性需求",
       "发展方向",
       "固定窗口限流-在生产环境基本不考虑",
       "在离线混部",
@@ -412,9 +416,11 @@
       "相关开源项目链接",
       "相关文章",
       "相关论文",
-      "相关链接",
       "社区建设",
       "精细化的资源管理策略",
+      "缺点",
+      "缺点-1",
+      "缺点-2",
       "认证和授权",
       "读时无阻塞写协程且缓冲区无元素",
       "读时无阻塞写协程且缓冲区有元素",
@@ -424,7 +430,9 @@
       "调用-llm的api需要注意什么",
       "负载因子",
       "资源管理系统-katalyst",
-      "需求背景"
+      "限流最佳实践",
+      "需求背景",
+      "非功能性需求"
     ]
   }
 }
