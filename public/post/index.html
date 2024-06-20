@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- This site was created with Hugo Blox. https://hugoblox.com -->
-<!-- Last Published: May 10, 2024 --><html lang="en-us" dir="ltr"
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
       data-wc-theme-default="system">
   
 <head>
@@ -44,7 +44,7 @@
   <meta name="description" content="A highly-customizable Hugo résumé theme powered by Hugo Blox Builder." />
 
   
-  <link rel="alternate" hreflang="en-us" href="https://example.com/post/" />
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/" />
 
   
   
@@ -166,7 +166,7 @@
   <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
   <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
 
-  <link rel="canonical" href="https://example.com/post/" />
+  <link rel="canonical" href="https://zhangyi.chat/post/" />
 
   
   
@@ -192,13 +192,13 @@
     <meta property="twitter:creator" content="@GetResearchDev" />
   
   <meta property="og:site_name" content="zy.chat" />
-  <meta property="og:url" content="https://example.com/post/" />
+  <meta property="og:url" content="https://zhangyi.chat/post/" />
   <meta property="og:title" content="Blog | zy.chat" />
-  <meta property="og:description" content="A highly-customizable Hugo résumé theme powered by Hugo Blox Builder." /><meta property="og:image" content="https://example.com/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
-    <meta property="twitter:image" content="https://example.com/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  <meta property="og:description" content="A highly-customizable Hugo résumé theme powered by Hugo Blox Builder." /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
   
     
-      <meta property="og:updated_time" content="2023-10-27T00:00:00&#43;00:00" />
+      <meta property="og:updated_time" content="2024-06-18T00:00:00&#43;00:00" />
     
   
 
@@ -447,15 +447,15 @@
     <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
       <div
         class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
-      <a href="/post/get-started/"><span
-        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">🎉 Easily create your own simple yet highly customizable blog</span></a>
+      <a href="/post/deep-dive-ratelimiter/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">一文说清楚分布式限流</span></a>
     </h2>
     <time
       class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
-      datetime="2023-10-27">
-      Oct 27, 2023
+      datetime="2024-06-18">
+      Jun 18, 2024
     </time>
-    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">Take full control of your personal brand and privacy by migrating away from the big tech platforms!</p>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">技术面试中，对技术方案选型的考查尤为关键，没有系统总结输出，大概率说不清楚。接下来我准备了一系列的文章，帮助读者在面试中，就能把一些技术问题说清楚。</p>
     <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
     Read more
       <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
@@ -465,7 +465,391 @@
   </div>
   <time
     class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
-    datetime="2023-10-27">Oct 27, 2023
+    datetime="2024-06-18">Jun 18, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_context/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Goroutine 上下文context源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-06-12">
+      Jun 12, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">本文是对Goroutine context的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-06-12">Jun 12, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_channel/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Golang 通道channel源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-06-03">
+      Jun 3, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">本文是对Golang channel的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-06-03">Jun 3, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_slice/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Golang 切片Slice源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-31">
+      May 31, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-31">May 31, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_map/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Golang 切片Map源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-31">
+      May 31, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">本文是对Golang Map的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-31">May 31, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/kcd-2024-shanghai-04-aicloud/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-24">
+      May 24, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">演讲者主要介绍了AI gateway的特性, 给出了Kong GatewayOperator项目的一页PPT介绍。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-24">May 24, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/kcd-2024-shanghai-01/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">KCD 2024 SHANGHAI - 01 Katalyst &amp; NRI</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-19">
+      May 19, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">两位演讲者分别是来自字节跳动的曹贺与来自 Intel 的任强，他们分别介绍了字节跳动开源的 Katalyst 以及其插件化的资源管理机制、CRI 扩展框架 NRI 以及 Katalyst 基于 NRI 的优化。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-19">May 19, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/client-go-source-code-walkthrough/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Client-go源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-19">
+      May 19, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">其实类似的文章这段时间梳理过很多，学习笔记类的文章价值难道真的只是知识搬运工？</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-19">May 19, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/kubernetes-mandala-updates/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Kubernetes 1.29 Mandala Updates</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-04-25">
+      Apr 25, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">本文主要包括 Kubernetes 1.29 Mandala 版本的更新内容，包括新增特性、改进和修复。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-04-25">Apr 25, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/kcd-2024-shanghai-05/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">KCD 2024 SHANGHAI - 05 Godel Scheduler</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-04-25">
+      Apr 25, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">下文是我在线观看这场行业大会议题的简单介绍与梳理，主要包括Kubernetes调度与资源管理以及LLM相关的议题。</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-04-25">Apr 25, 2024
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_sync_tools/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10"></span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="0001-01-01">
+      Jan 1, 0001
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400"></p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="0001-01-01">Jan 1, 0001
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_sync_map/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10"></span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="0001-01-01">
+      Jan 1, 0001
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400"></p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="0001-01-01">Jan 1, 0001
+  </time>
+</article>
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/golang_concurrency/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10"></span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="0001-01-01">
+      Jan 1, 0001
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400"></p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="0001-01-01">Jan 1, 0001
   </time>
 </article>
 

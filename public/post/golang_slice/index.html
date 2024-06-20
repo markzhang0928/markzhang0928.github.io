@@ -1,0 +1,972 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/golang_slice/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/post/golang_slice/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/post/golang_slice/" />
+  <meta property="og:title" content="Golang 切片Slice源码走读 | zy.chat" />
+  <meta property="og:description" content="本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。" /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-05-31T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-05-31T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhangyi.chat/post/golang_slice/"
+  },
+  "headline": "Golang 切片Slice源码走读",
+  
+  "datePublished": "2024-05-31T00:00:00Z",
+  "dateModified": "2024-05-31T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "张怡"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "zy.chat",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "本文是对Golang Slice的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。"
+}
+</script>
+
+  
+
+  
+
+
+  <title>Golang 切片Slice源码走读 | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+<div class="flex flex-col justify-center">
+  <article class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert">
+    
+    
+    
+
+    <h1 class="lg:text-6xl">Golang 切片Slice源码走读</h1>
+
+    
+    
+    
+
+    <p>切片slice是golang中非常经典的数据结构，其定位可以类比其他语言中的动态数组。	切片中的元素存放在一块内存地址连续的区域，使用索引可以快速检索到指定位置的元素；切片长度和容量是可变的，在使用过程中可以根据需要进行扩容。
+本文对应的Golang版本是1.21.9</p>
+<h3 id="数据结构">数据结构</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="c1">// src/runtime/slice.go
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">slice</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">array</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">len</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">cap</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>array 指针指向底层数组， len表示切片长度，cap表示底层数组容量。</p>
+<h3 id="初始化">初始化</h3>
+<p>声明和初始化主要通过 1) 变量声明 2) 字面量 3) 使用内置函数make() 4) 从切片和数组中切取</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">makeslice</span><span class="p">(</span><span class="nx">et</span> <span class="o">*</span><span class="nx">_type</span><span class="p">,</span> <span class="nx">len</span><span class="p">,</span> <span class="nx">cap</span> <span class="kt">int</span><span class="p">)</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mem</span><span class="p">,</span> <span class="nx">overflow</span> <span class="o">:=</span> <span class="nx">math</span><span class="p">.</span><span class="nf">MulUintptr</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">cap</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">overflow</span> <span class="o">||</span> <span class="nx">mem</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span> <span class="o">||</span> <span class="nx">len</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">len</span> <span class="p">&gt;</span> <span class="nx">cap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">mem</span><span class="p">,</span> <span class="nx">overflow</span> <span class="o">:=</span> <span class="nx">math</span><span class="p">.</span><span class="nf">MulUintptr</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">len</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">overflow</span> <span class="o">||</span> <span class="nx">mem</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span> <span class="o">||</span> <span class="nx">len</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">panicmakeslicelen</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">panicmakeslicecap</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nf">mallocgc</span><span class="p">(</span><span class="nx">mem</span><span class="p">,</span> <span class="nx">et</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ol>
+<li>调用 math.MulUintptr 的方法，结合每个元素的大小以及切片的容量，计算出初始化切片所需要的内存空间大小。</li>
+<li>如果容量超限，len 取负值或者 len 超过 cap，直接 panic</li>
+<li>调用位于 runtime/malloc.go 文件中的 mallocgc 方法，为切片进行内存空间的分配</li>
+</ol>
+<h3 id="元素追加">元素追加</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">a := []int{1,2,3,4,5}
+</span></span><span class="line"><span class="cl">b := a[1:4]
+</span></span><span class="line"><span class="cl">b = append(b, 10) // 此时元素a[4]将由5变成0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">此时需要借助扩展表达式 (完整切片表达式)
+</span></span><span class="line"><span class="cl">a := []int{1,2,3,4,5}
+</span></span><span class="line"><span class="cl">b := a[1:4:4]
+</span></span><span class="line"><span class="cl">b = append(b, 10)
+</span></span></code></pre></div><h3 id="切片扩容">切片扩容</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">growslice</span><span class="p">(</span><span class="nx">oldPtr</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">,</span> <span class="nx">newLen</span><span class="p">,</span> <span class="nx">oldCap</span><span class="p">,</span> <span class="nx">num</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">et</span> <span class="o">*</span><span class="nx">_type</span><span class="p">)</span> <span class="nx">slice</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">oldLen</span> <span class="o">:=</span> <span class="nx">newLen</span> <span class="o">-</span> <span class="nx">num</span>
+</span></span><span class="line"><span class="cl">	<span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">newLen</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nf">errorString</span><span class="p">(</span><span class="s">&#34;growslice: len out of range&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 倘若元素大小为 0，则无需分配空间直接返回
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">return</span> <span class="nx">slice</span><span class="p">{</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">zerobase</span><span class="p">),</span> <span class="nx">newLen</span><span class="p">,</span> <span class="nx">newLen</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">newcap</span> <span class="o">:=</span> <span class="nx">oldCap</span>  <span class="c1">// 计算扩容后数组的容量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">doublecap</span> <span class="o">:=</span> <span class="nx">newcap</span> <span class="o">+</span> <span class="nx">newcap</span>   <span class="c1">// 取原容量两倍的容量数值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">newLen</span> <span class="p">&gt;</span> <span class="nx">doublecap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 倘若新的容量大于原容量的两倍，直接取新容量作为数组扩容后的容量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">newLen</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">const</span> <span class="nx">threshold</span> <span class="p">=</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 倘若原容量小于 256，则扩容后新容量为原容量的两倍
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nx">oldCap</span> <span class="p">&lt;</span> <span class="nx">threshold</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">doublecap</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 在原容量的基础上，对原容量 * 5/4 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// 循环执行上述操作，直到扩容后的容量已经大于等于预期的新容量为止
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">for</span> <span class="mi">0</span> <span class="p">&lt;</span> <span class="nx">newcap</span> <span class="o">&amp;&amp;</span> <span class="nx">newcap</span> <span class="p">&lt;</span> <span class="nx">newLen</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="c1">// Transition from growing 2x for small slices
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="c1">// to growing 1.25x for large slices. This formula
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="c1">// gives a smooth-ish transition between the two.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="nx">newcap</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">newcap</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="nx">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 倘若数值越界了，则取预期的新容量 cap 封顶
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">if</span> <span class="nx">newcap</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">newLen</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">overflow</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">lenmem</span><span class="p">,</span> <span class="nx">newlenmem</span><span class="p">,</span> <span class="nx">capmem</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 基于容量，确定新数组容器所需要的内存空间大小 capmem
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">switch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 倘若数组元素的大小为 1，则新容量大小为 1 * newcap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 同时会针对 span class 进行取整
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">case</span> <span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="o">...</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 倘若数组元素为指针类型，则根据指针占用空间结合元素个数计算空间大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 并会针对 span class 进行取整
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">case</span> <span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span> <span class="o">==</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="o">...</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 倘若元素大小为 2 的指数，则直接通过位运算进行空间大小的计算  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">case</span> <span class="nf">isPowerOfTwo</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">Size_</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">		<span class="o">...</span>
+</span></span><span class="line"><span class="cl">	<span class="o">/</span> <span class="nx">兜底分支</span><span class="err">：</span><span class="nx">根据元素大小乘以元素个数</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 再针对 span class 进行取整  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span> <span class="p">=</span> <span class="nf">roundupsize</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">overflow</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">capmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 进行实际的切片初始化操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">var</span> <span class="nx">p</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 非指针类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">et</span><span class="p">.</span><span class="nx">ptrdata</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">p</span> <span class="p">=</span> <span class="nf">mallocgc</span><span class="p">(</span><span class="nx">capmem</span><span class="p">,</span> <span class="kc">nil</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 指针类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nx">p</span> <span class="p">=</span> <span class="nf">mallocgc</span><span class="p">(</span><span class="nx">capmem</span><span class="p">,</span> <span class="nx">et</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将切片的内容拷贝到扩容后的位置 p 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">memmove</span><span class="p">(</span><span class="nx">p</span><span class="p">,</span> <span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">,</span> <span class="nx">lenmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">slice</span><span class="p">{</span><span class="nx">p</span><span class="p">,</span> <span class="nx">newLen</span><span class="p">,</span> <span class="nx">newcap</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>切片的扩容流程源码位于 runtime/slice.go 文件的 growslice 方法当中，其中核心步骤如下：</p>
+<p>• 倘若扩容后预期的新容量小于原切片的容量，则 panic</p>
+<p>• 倘若切片元素大小为 0（元素类型为 struct{}），则直接复用一个全局的 zerobase 实例，直接返回</p>
+<p>• 倘若预期的新容量超过老容量的两倍，则直接采用预期的新容量</p>
+<p>• 倘若老容量小于 256，则直接采用老容量的2倍作为新容量</p>
+<p>• 倘若老容量已经大于等于 256，则在老容量的基础上扩容 1/4 的比例并且累加上 192 的数值，持续这样处理，直到得到的新容量已经大于等于预期的新容量为止</p>
+<p>• 结合 mallocgc 流程中，对内存分配单元 mspan 的等级制度，推算得到实际需要申请的内存空间大小</p>
+<p>• 调用 mallocgc，对新切片进行内存初始化</p>
+<p>• 调用 memmove 方法，将老切片中的内容拷贝到新切片中</p>
+<p>• 返回扩容后的新切片</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>  
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;len of s: %d, cap of s: %d&#34;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">),</span><span class="nb">cap</span><span class="p">(</span><span class="nx">s</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">len</span><span class="p">:</span> <span class="mi">513</span><span class="p">,</span> <span class="nx">cap</span><span class="p">:</span> <span class="mi">848</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="mf">1.</span> <span class="nx">切片扩容操作</span><span class="err">：</span><span class="nx">由于切片</span> <span class="nx">s</span> <span class="nx">原有容量为</span> <span class="mi">512</span><span class="err">，</span><span class="nx">已经超过了阈值</span> <span class="mi">256</span><span class="err">，</span><span class="nx">因此对其进行扩容操作会采用的计算方式为</span> <span class="mi">512</span> <span class="o">*</span> <span class="p">(</span><span class="mi">512</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="mi">256</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span> <span class="p">=</span> <span class="mi">832</span>
+</span></span><span class="line"><span class="cl"><span class="mf">2.</span> <span class="nx">然后结合分配内存的</span> <span class="nx">mallocgc</span> <span class="nx">流程</span><span class="err">，</span><span class="nx">将</span> <span class="mi">8</span><span class="kt">byte</span> <span class="o">*</span> <span class="mi">832</span> <span class="p">=</span> <span class="mi">6656</span> <span class="kt">byte</span> <span class="nx">补齐到6784</span> <span class="kt">byte</span> <span class="nx">的这一档次</span><span class="err">。</span><span class="nx">扩容后实际的新容量为</span> <span class="nx">cap</span> <span class="p">=</span> <span class="mi">6784</span><span class="o">/</span><span class="mi">8</span> <span class="p">=</span> <span class="mi">848</span><span class="err">。</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// class  bytes/obj  bytes/span  objects  tail waste  max waste  min align
+</span></span></span><span class="line"><span class="cl"><span class="c1">//     1          8        8192     1024           0     87.50%          8
+</span></span></span><span class="line"><span class="cl"><span class="c1">//     2         16        8192      512           0     43.75%         16
+</span></span></span><span class="line"><span class="cl"><span class="c1">//     3         24        8192      341           8     29.24%          
+</span></span></span><span class="line"><span class="cl"><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    48       6528       32768        5         128      6.23%        128
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    49       6784       40960        6         256      4.36%        128 
+</span></span></span></code></pre></div><h3 id="元素删除">元素删除</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="c1">// 删除尾部元素
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// [0,1,2,3]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">s</span> <span class="p">=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 删除中间元素
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 删除 index = 2 的元素
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">s</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span><span class="nx">s</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span><span class="o">...</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// s: [0,1,3,4], len: 4, cap: 5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;s: %v, len: %d, cap: %d&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 删除所有元素
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="p">=</span> <span class="nx">s</span><span class="p">[:</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// s: [], len: 0, cap: 5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;s: %v, len: %d, cap: %d&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="切片拷贝">切片拷贝</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// s 和 s1 的地址是一致的.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s1</span> <span class="o">:=</span> <span class="nx">s</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;address of s: %p, address of s1: %p&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">,</span> <span class="nx">s1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// s 和 s1 的地址是相互独立的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">Test_slice</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s1</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">copy</span><span class="p">(</span><span class="nx">s1</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;s: %v, s1: %v&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">,</span> <span class="nx">s1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">t</span><span class="p">.</span><span class="nf">Logf</span><span class="p">(</span><span class="s">&#34;address of s: %p, address of s1: %p&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">,</span> <span class="nx">s1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">注意</span><span class="p">:</span> 
+</span></span><span class="line"><span class="cl"><span class="mf">1.</span> <span class="nx">关于slice的切割赋值</span><span class="err">，</span><span class="nx">如果cap比较大</span><span class="err">，</span><span class="nx">仍然会导致高内存消耗</span><span class="err">，</span><span class="nx">有内存泄漏的风险</span><span class="err">。</span><span class="nx">此时</span><span class="err">，</span><span class="nx">应该使用copy</span><span class="p">(</span><span class="nx">src</span><span class="p">,</span> <span class="nx">dst</span><span class="p">)</span><span class="nx">函数进行拷贝</span><span class="err">。</span>
+</span></span><span class="line"><span class="cl"><span class="mf">2.</span> <span class="nx">Slice并非并发安全的数据结构</span><span class="err">，</span><span class="nx">使用时需要注意并发安全的问题</span><span class="err">。</span>
+</span></span></code></pre></div>
+  </article>
+
+<div class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert mt-5">
+  <div class="max-w-prose print:hidden">
+  
+
+
+
+  
+
+<div class="flex justify-center">
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/golang-slice/">Golang Slice</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/data-types/">Data Types</a>
+  
+</div>
+
+
+  
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+
+<div class="flex">
+  
+  
+  <img
+    class="mr-4 h-24 w-24 rounded-full"
+    width="96"
+    height="96"
+    alt="张怡"
+  src="/author/%E5%BC%A0%E6%80%A1/avatar_hud4b4d875cce5e0778ef5b9cd48471f21_880315_192x192_fill_q80_lanczos_center.jpg"
+  loading="lazy"
+  />
+  
+  <div class="place-self-center">
+    <div class="text-[0.6rem] uppercase leading-3 text-neutral-500 dark:text-neutral-400">
+      Authors
+    </div>
+    <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+      <a href="https://zhangyi.chat/" class="no-underline">
+      张怡
+      </a>
+    </div>
+
+    
+    <div class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+    .
+    </div>
+    
+
+
+    
+
+    <div class="text-2xl sm:text-lg pt-1">
+
+      
+<div class="flex flex-wrap text-neutral-500 dark:text-neutral-300">
+  
+    
+    
+    
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="mailto:zhangyiscut@gmail.com"
+      
+      aria-label="At-Symbol"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 1 0-8 0a4 4 0 0 0 8 0Zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-9 9m4.5-1.206a8.959 8.959 0 0 1-4.5 1.207"/></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://github.com/markzhang0928"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Github"
+    ><svg style="height: 1em;" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://www.linkedin.com/"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Linkedin"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg></a>
+  
+</div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+
+
+
+
+  
+  
+    
+    
+    
+<div class="pt-1">
+  <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+  <div class="flex justify-between pt-2">
+    <span>
+      
+        <a class="group flex no-underline" href="/post/kcd-2024-shanghai-04-aicloud/">
+          <span
+            class="me-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline rtl:hidden">&larr;</span></span>
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator</span>
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                May 24, 2024
+              
+            </span>
+          </span>
+        </a>
+      
+    </span>
+    <span>
+      
+        <a class="group flex text-right no-underline" href="/post/golang_map/">
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Golang 切片Map源码走读</span
+            >
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                May 31, 2024
+              
+            </span>
+          </span>
+          <span
+            class="ms-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline">&rarr;</span></span>
+        </a>
+      
+    </span>
+  </div>
+</div>
+
+
+
+  
+  
+
+
+
+</div>
+
+</div>
+
+</div>
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,926 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="演讲者主要介绍了AI gateway的特性, 给出了Kong GatewayOperator项目的一页PPT介绍。" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/" />
+  <meta property="og:title" content="KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator | zy.chat" />
+  <meta property="og:description" content="演讲者主要介绍了AI gateway的特性, 给出了Kong GatewayOperator项目的一页PPT介绍。" /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-05-24T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-05-24T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/"
+  },
+  "headline": "KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway \u0026 Kong Gateway Operator",
+  
+  "datePublished": "2024-05-24T00:00:00Z",
+  "dateModified": "2024-05-24T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "张怡"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "zy.chat",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "演讲者主要介绍了AI gateway的特性, 给出了Kong GatewayOperator项目的一页PPT介绍。"
+}
+</script>
+
+  
+
+  
+
+
+  <title>KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+<div class="flex flex-col justify-center">
+  <article class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert">
+    
+    
+    
+
+    <h1 class="lg:text-6xl">KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator</h1>
+
+    
+    
+    
+
+    <h2 id="用-operator-将-llm-和-gateway-结合的更容易---张晋涛kong-inc">用 Operator 将 LLM 和 Gateway 结合的更容易 - 张晋涛，Kong Inc.</h2>
+<p><strong>总结:</strong></p>
+<ul>
+<li>演讲者先介绍了调用 LLM API 的时候需要注意的问题，包括安全性、成本、可靠性、可观测性与配额等多方面，并以此引入了 AI Gateway 的概念。</li>
+<li>AI Gateway通过插件的方式，集成了多种在线和私有化部署的模型，进行认证授权密钥的管理，以及可观测服务的集成，甚至无须编码将LLM应用与后端服务集成。</li>
+<li>此外，他还介绍了Kong Gateway Operator，通过 CRD 以及 Kubernetes 的 Gateway API 以更加便利的形式管理 AI Gateway 的资源，更好地与 Kubernetes 的生态系统集成。</li>
+</ul>
+<h3 id="为什么llms-需要-gateway">为什么LLMs 需要 Gateway</h3>
+<h4 id="基本开发场景">基本开发场景</h4>
+<ul>
+<li>
+<ol>
+<li>调用 LLM的API</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>传递参数/prompt</li>
+</ol>
+</li>
+<li>
+<ol start="3">
+<li>处理响应结果</li>
+</ol>
+</li>
+</ul>
+<h4 id="调用-llm的api需要注意什么">调用 LLM的API需要注意什么</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">- 1. 安全性
+</span></span><span class="line"><span class="cl">     - 1.1 认证信息API Key的管理
+</span></span><span class="line"><span class="cl">     - 1.2 请求内容的安全性/合规性
+</span></span><span class="line"><span class="cl">- 2. 成本
+</span></span><span class="line"><span class="cl">     - 2.1 缓存请求响应(可选)
+</span></span><span class="line"><span class="cl">- 3. 可靠性
+</span></span><span class="line"><span class="cl">     - 3.1 供应商API的SLA
+</span></span><span class="line"><span class="cl">- 4. 可观测性
+</span></span><span class="line"><span class="cl">     - Requests
+</span></span><span class="line"><span class="cl">     - Tokens/Cost
+</span></span><span class="line"><span class="cl">- 5. 限制与配额
+</span></span><span class="line"><span class="cl">     - RPM &amp; RPD
+</span></span><span class="line"><span class="cl">     - TPM &amp; TPD
+</span></span><span class="line"><span class="cl">- 6. 版本兼容性
+</span></span><span class="line"><span class="cl">     - API/模型版本升级等
+</span></span><span class="line"><span class="cl">- 7. 错误处理
+</span></span><span class="line"><span class="cl">     - 异常重试
+</span></span><span class="line"><span class="cl">     - Fallback Response
+</span></span><span class="line"><span class="cl">- 8. 依赖管理
+</span></span><span class="line"><span class="cl">     - 多种备用模型
+</span></span><span class="line"><span class="cl">     - 避免单一依赖
+</span></span></code></pre></div><h3 id="ai-gateway的能力">AI Gateway的能力</h3>
+<figure><img src="ai_proxy.png"
+         alt="ai_proxy"/><figcaption>
+            <p>ai_proxy</p>
+        </figcaption>
+</figure>
+
+<h4 id="认证和授权">认证和授权</h4>
+<ul>
+<li>
+<p>LLM API 的密钥可通过AI Gateway统一管理</p>
+<ul>
+<li>Environment variables</li>
+<li>AWS Secrets Manager</li>
+<li>GCP Secrets Manager</li>
+<li>Azure Key Vaults</li>
+<li>HashiCorp Vault</li>
+</ul>
+</li>
+<li>
+<p>可使用Kong AI Gateway原生的多种认证插件进行集成</p>
+</li>
+</ul>
+<h4 id="无须编码即可将llm应用到原有api调用流程中">无须编码即可将LLM应用到原有API调用流程中</h4>
+<ul>
+<li>
+<ol>
+<li>AI Response Transformer: 设置prompt直接处理响应</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>AI Response Transformer: 设置prompt直接处理请求</li>
+</ol>
+</li>
+</ul>
+<figure><img src="flow_chart.png"/>
+</figure>
+
+<h4 id="ai-prompt-guard--prompt-防火墙">AI Prompt Guard – prompt 防火墙</h4>
+<ul>
+<li>通过 Allow Patterns/Deny Patterns进行特定范围 prompt的管理</li>
+<li>防止一些违规或者不安全的内容</li>
+<li>AI Prompt Decorator
+<ul>
+<li>统一规则设置</li>
+<li>用于为所有请求设置统一的prompt规则</li>
+<li>合规</li>
+<li>排除敏感信息</li>
+<li>&hellip;</li>
+</ul>
+</li>
+</ul>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300">以上主要介绍了AI Gateway的一些特性</span>
+</div>
+<h3 id="kong-gateway-operator带来的便利">Kong Gateway Operator带来的便利</h3>
+<p>全托管的Gateway</p>
+<ul>
+<li>通过申明式配置，直接定义</li>
+<li>创建gateway资源，自动管理</li>
+</ul>
+<p><figure><img src="kgo_config_1.png"/>
+</figure>
+
+<figure><img src="kgo_config_2.png"/>
+</figure>
+</p>
+<ul>
+<li>通过AIGateway进行第一类支持
+<ul>
+<li>直接申明所需配置，自动部署 Gateway 并配置相关 plugin</li>
+<li>减少运维/维护成本</li>
+</ul>
+</li>
+<li>弹性伸缩</li>
+<li>AIGateway的生命周期管理
+<ul>
+<li><a href="https://github.com/Kong/gateway-operator/" target="_blank" rel="noopener">https://github.com/Kong/gateway-operator/</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="发展方向">发展方向</h3>
+<ul>
+<li>Kong Gateway Operator：通过 configRef 等机制，复用配置/屏蔽一些配置字段</li>
+<li>AIGateway：基于 Token 的计费和限制</li>
+<li>添加更多 LLM 的集成</li>
+</ul>
+
+  </article>
+
+<div class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert mt-5">
+  <div class="max-w-prose print:hidden">
+  
+
+
+
+  
+
+<div class="flex justify-center">
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/llm/">LLM</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/kong-ai-gateway/">Kong AI Gateway</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/kong-gateway-operator/">Kong Gateway Operator</a>
+  
+</div>
+
+
+  
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+
+<div class="flex">
+  
+  
+  <img
+    class="mr-4 h-24 w-24 rounded-full"
+    width="96"
+    height="96"
+    alt="张怡"
+  src="/author/%E5%BC%A0%E6%80%A1/avatar_hud4b4d875cce5e0778ef5b9cd48471f21_880315_192x192_fill_q80_lanczos_center.jpg"
+  loading="lazy"
+  />
+  
+  <div class="place-self-center">
+    <div class="text-[0.6rem] uppercase leading-3 text-neutral-500 dark:text-neutral-400">
+      Authors
+    </div>
+    <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+      <a href="https://zhangyi.chat/" class="no-underline">
+      张怡
+      </a>
+    </div>
+
+    
+    <div class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+    .
+    </div>
+    
+
+
+    
+
+    <div class="text-2xl sm:text-lg pt-1">
+
+      
+<div class="flex flex-wrap text-neutral-500 dark:text-neutral-300">
+  
+    
+    
+    
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="mailto:zhangyiscut@gmail.com"
+      
+      aria-label="At-Symbol"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 1 0-8 0a4 4 0 0 0 8 0Zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-9 9m4.5-1.206a8.959 8.959 0 0 1-4.5 1.207"/></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://github.com/markzhang0928"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Github"
+    ><svg style="height: 1em;" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://www.linkedin.com/"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Linkedin"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg></a>
+  
+</div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+
+
+
+
+  
+  
+    
+    
+    
+<div class="pt-1">
+  <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+  <div class="flex justify-between pt-2">
+    <span>
+      
+        <a class="group flex no-underline" href="/post/client-go-source-code-walkthrough/">
+          <span
+            class="me-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline rtl:hidden">&larr;</span></span>
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Client-go源码走读</span>
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                May 19, 2024
+              
+            </span>
+          </span>
+        </a>
+      
+    </span>
+    <span>
+      
+        <a class="group flex text-right no-underline" href="/post/golang_slice/">
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Golang 切片Slice源码走读</span
+            >
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                May 31, 2024
+              
+            </span>
+          </span>
+          <span
+            class="ms-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline">&rarr;</span></span>
+        </a>
+      
+    </span>
+  </div>
+</div>
+
+
+
+  
+  
+
+
+
+</div>
+
+</div>
+
+</div>
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,966 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="本文是对Goroutine context的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/golang_context/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/post/golang_context/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/post/golang_context/" />
+  <meta property="og:title" content="Goroutine 上下文context源码走读 | zy.chat" />
+  <meta property="og:description" content="本文是对Goroutine context的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。" /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-06-12T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-06-12T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhangyi.chat/post/golang_context/"
+  },
+  "headline": "Goroutine 上下文context源码走读",
+  
+  "datePublished": "2024-06-12T00:00:00Z",
+  "dateModified": "2024-06-12T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "张怡"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "zy.chat",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "本文是对Goroutine context的关键源码进行走读，并记录使用时容易犯的一些错误。示例可能来源于网络、各类书籍，对应的Golang版本是1.21.9，仅供个人学习使用。"
+}
+</script>
+
+  
+
+  
+
+
+  <title>Goroutine 上下文context源码走读 | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+<div class="flex flex-col justify-center">
+  <article class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert">
+    
+    
+    
+
+    <h1 class="lg:text-6xl">Goroutine 上下文context源码走读</h1>
+
+    
+    
+    
+
+    <p>golang context上下文，主要用来在多个goroutine之间传递上下文信息，实现取消信号、超时/截止时间、k-v信息传递等goroutine生命周期的控制。</p>
+<h2 id="使用语法和基本示例">使用语法和基本示例</h2>
+<ol>
+<li>请求级别的上下文传递，比如: 使用context传递 服务端 requestId。</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">process</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;traceId&#34;</span><span class="p">,</span> <span class="s">&#34;qcrao-2020&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">process</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">process</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">traceId</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">ctx</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">&#34;traceId&#34;</span><span class="p">).(</span><span class="kt">string</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="nx">ok</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;process over.trace_id=%s\n&#34;</span><span class="p">,</span> <span class="nx">traceId</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;process over.no_trace_id\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ol start="2">
+<li>定时取消: withTimeOut函数返回的context和cancelFun分开</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nx">Background</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span> <span class="c1">// 1 or 5 time.Second
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">defer</span> <span class="nf">cancel</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">ids</span> <span class="o">:=</span> <span class="nf">getResultFromWeb</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">fmt</span><span class="p">.</span><span class="nf">Prinln</span><span class="p">(</span><span class="nx">ids</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">getResultFromWeb</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="p">(</span><span class="nx">res</span> <span class="p">[]</span><span class="kt">int64</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[]</span><span class="kt">int64</span><span class="p">{</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[]</span><span class="kt">int64</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ol start="3">
+<li>防止泄漏: 当goroutine发生异常阻塞时，如果没有设置TimeOut或者主动cancel, 就会发生goroutine泄漏。</li>
+</ol>
+<h2 id="数据结构">数据结构</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Context</span> <span class="kd">interface</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">Deadline</span><span class="p">()</span> <span class="p">(</span><span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">,</span> <span class="nx">ok</span> <span class="kt">bool</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">Err</span><span class="p">()</span> <span class="kt">error</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">Value</span><span class="p">(</span><span class="nx">key</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">any</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>context的实现定义了接口，实现这些接口函数的类均被当作context的一种。</p>
+<p>• Deadline()：该方法返回一个deadline代表context 的过期时间，标识是否已设置deadline的bool值；</p>
+<p>• Done()：该方法返回一个context 的只读channel，需要在select-case语句中使用，如 case &lt;- context.Done():</p>
+<p>• Err()：返回context被关闭的原因；关闭原因由context控制，不需要用户设置。
+比如：1. 因deadline关闭: context deadline exceeded; 2. 因主动关闭: context canceled;</p>
+<p>• Value()：该方法用于根据key值返回查询map中的value， context 中的对应 key 的值.</p>
+<p>context 源码主要包括几个关键结构体，分别实现了Context类和 canceler类</p>
+<figure><img src="context_classes.png"
+         alt="context整体类图"/><figcaption>
+            <p>context整体类图</p>
+        </figcaption>
+</figure>
+
+<h3 id="1-emptyctx-contextbackgroud--contexttodo-实现了emptyctx类">1. emptyCtx: context.Backgroud() &amp;&amp; context.TODO() 实现了emptyCtx类。</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">emptyCtx</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">emptyCtx</span><span class="p">)</span> <span class="nf">Deadline</span><span class="p">()</span> <span class="p">(</span><span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">,</span> <span class="nx">ok</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">emptyCtx</span><span class="p">)</span> <span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">emptyCtx</span><span class="p">)</span> <span class="nf">Err</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">emptyCtx</span><span class="p">)</span> <span class="nf">Value</span><span class="p">(</span><span class="nx">key</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">any</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">backgroundCtx</span> <span class="kd">struct</span><span class="p">{</span> <span class="nx">emptyCtx</span> <span class="p">}</span> <span class="c1">// 作用在顶层，作为所有context的根节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">backgroundCtx</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="s">&#34;context.Background&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">todoCtx</span> <span class="kd">struct</span><span class="p">{</span> <span class="nx">emptyCtx</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">todoCtx</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="s">&#34;context.TODO&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>• emptyCtx 是一个空的 context，本质上类型为一个整型；</p>
+<p>• Deadline() 方法会返回一个公元元年时间以及 false 的 flag，标识当前 context 不存在过期时间；</p>
+<p>• Done() 方法返回一个 nil 值，用户无论往 nil 中写入或者读取数据，均会陷入阻塞；</p>
+<p>• Err() 方法返回的错误永远为 nil；</p>
+<p>• Value() 方法返回的 value 同样永远为 nil.</p>
+<h3 id="2-cancelctx">2. cancelCtx:</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">cancelCtx</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">mu</span>       <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span>            <span class="c1">// protects following fields
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">done</span>     <span class="nx">atomic</span><span class="p">.</span><span class="nx">Value</span>          <span class="c1">// 实际类型为 chan struct{}，即用以反映 cancelCtx 生命周期的通道；
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">children</span> <span class="kd">map</span><span class="p">[</span><span class="nx">canceler</span><span class="p">]</span><span class="kd">struct</span><span class="p">{}</span> <span class="c1">// 记录由Context派生出来的所有child，此Context取消会把其中所有child都取消掉
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">err</span>      <span class="kt">error</span>                 <span class="c1">// set to non-nil by the first cancel call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">cause</span>    <span class="kt">error</span>                 <span class="c1">// set to non-nil by the first cancel call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">canceler</span> <span class="kd">interface</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">cancel</span><span class="p">(</span><span class="nx">removeFromParent</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">cause</span> <span class="kt">error</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>• Done() 方法返回一个channel, channel一旦关闭，就会读出零值。cancelCtx.done的值一般经历如下三个阶段: nil -&gt; chan struct{} -&gt; closed chan</p>
+<p>• Err() 方法返回一个error告知context被关闭的原因即可，cancelCtx来说只需要返回成员变量err。</p>
+<p>• Value() 方法返回context中对应key的value值。如果key指定为&amp;cancelCtxKey, 则返回cancelCtx自身的指针；</p>
+<p>• 未实现Deadline()方法，仅嵌套了一个带有deadline方法的Context。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">cancelCtx</span><span class="p">)</span> <span class="nf">cancel</span><span class="p">(</span><span class="nx">removeFromParent</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">cause</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 必须要传err
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">panic</span><span class="p">(</span><span class="s">&#34;context: internal error: missing cancel error&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="nx">cause</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">cause</span> <span class="p">=</span> <span class="nx">err</span> <span class="c1">// 设置cause=err 说明关闭原因
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="c1">// already canceled
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 给err字段赋值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="p">=</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">c</span><span class="p">.</span><span class="nx">cause</span> <span class="p">=</span> <span class="nx">cause</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 关闭channel，通知其他协程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">d</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Load</span><span class="p">().(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="nx">d</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nx">closedchan</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">close</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="nx">child</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">c</span><span class="p">.</span><span class="nx">children</span> <span class="p">{</span> <span class="c1">// 遍历所有children, 逐个调用cancel方法取消子节点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// NOTE: acquiring the child&#39;s lock while holding parent&#39;s lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">child</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">cause</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 将子节点置空
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">c</span><span class="p">.</span><span class="nx">children</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="nx">removeFromParent</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 从父节点context中移除自己本身的context
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">removeChild</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>•  cancel方法的作用是关闭c.done；递归地取消所有子节点；从父节点从删除自己；</p>
+<p>•  作用：通过关闭channel，将取消信号传递给它的所有子节点;</p>
+<p>•  goroutine收到取消信号的方式，是select语句中读c.done分支被选中；</p>
+<p>注意:</p>
+<ol>
+<li>context本身并没有取消函数，取消函数只能由外层函数调用，防止子节点context调用取消函数，从而严格控制信息的流向：由父节点context流向子节点context。</li>
+</ol>
+<h3 id="3-timectx-用来表示自动cancel的最终时间">3. timeCtx: 用来表示自动cancel的最终时间，</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">timerCtx</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">cancelCtx</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">timer</span> <span class="o">*</span><span class="nx">timer</span><span class="p">.</span><span class="nx">timer</span> <span class="c1">// 指定最后期限，自动触发cancel的定时器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">  <span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span> <span class="c1">// 指定最长存活时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p>• Deadline()方法 返回timeCtx.deadline过期时间, 而timerCtx.deadline 是WithDeadline() 或 WithTimeout()方法设置的。</p>
+<p>• cancel()基本继承cancelCtx, 只需额外关闭timer，当timerCtx被关闭时，timerCtx.cancelCtx.err存储关闭原因。</p>
+<h3 id="4-valuectx">4. valueCtx:</h3>
+<p>只能存一个kv对，不支持key去重，当前 valueCtx 的 key 不等于用户传入的 key，则从 parent context 中依次向上寻找。</p>
+<h2 id="go官方文档的基本建议">Go官方文档的基本建议</h2>
+<ol>
+<li>不要将 Context 塞到结构体里。直接将 Context 类型作为函数的第一参数，而且一般都命名为 ctx。</li>
+<li>不要向函数传入一个 nil 的 context，如果你实在不知道传什么，标准库给你准备好了一个 context：todo。</li>
+<li>不要把本应该作为函数参数的类型塞到 context 中，context 存储的应该是一些共同的数据。例如：登陆的 session、cookie 等。(业务相关的值不建议使用context进行传递)</li>
+<li>同一个 context 可能会被传递到多个 goroutine，context 是并发安全的。</li>
+</ol>
+
+  </article>
+
+<div class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert mt-5">
+  <div class="max-w-prose print:hidden">
+  
+
+
+
+  
+
+<div class="flex justify-center">
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/golang-context/">Golang Context</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/data-types/">Data Types</a>
+  
+</div>
+
+
+  
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+
+<div class="flex">
+  
+  
+  <img
+    class="mr-4 h-24 w-24 rounded-full"
+    width="96"
+    height="96"
+    alt="张怡"
+  src="/author/%E5%BC%A0%E6%80%A1/avatar_hud4b4d875cce5e0778ef5b9cd48471f21_880315_192x192_fill_q80_lanczos_center.jpg"
+  loading="lazy"
+  />
+  
+  <div class="place-self-center">
+    <div class="text-[0.6rem] uppercase leading-3 text-neutral-500 dark:text-neutral-400">
+      Authors
+    </div>
+    <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+      <a href="https://zhangyi.chat/" class="no-underline">
+      张怡
+      </a>
+    </div>
+
+    
+    <div class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+    .
+    </div>
+    
+
+
+    
+
+    <div class="text-2xl sm:text-lg pt-1">
+
+      
+<div class="flex flex-wrap text-neutral-500 dark:text-neutral-300">
+  
+    
+    
+    
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="mailto:zhangyiscut@gmail.com"
+      
+      aria-label="At-Symbol"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 1 0-8 0a4 4 0 0 0 8 0Zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-9 9m4.5-1.206a8.959 8.959 0 0 1-4.5 1.207"/></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://github.com/markzhang0928"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Github"
+    ><svg style="height: 1em;" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://www.linkedin.com/"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Linkedin"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg></a>
+  
+</div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+
+
+
+
+  
+  
+    
+    
+    
+<div class="pt-1">
+  <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+  <div class="flex justify-between pt-2">
+    <span>
+      
+        <a class="group flex no-underline" href="/post/golang_channel/">
+          <span
+            class="me-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline rtl:hidden">&larr;</span></span>
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Golang 通道channel源码走读</span>
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                Jun 3, 2024
+              
+            </span>
+          </span>
+        </a>
+      
+    </span>
+    <span>
+      
+        <a class="group flex text-right no-underline" href="/post/deep-dive-ratelimiter/">
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >一文说清楚分布式限流</span
+            >
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                Jun 18, 2024
+              
+            </span>
+          </span>
+          <span
+            class="ms-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline">&rarr;</span></span>
+        </a>
+      
+    </span>
+  </div>
+</div>
+
+
+
+  
+  
+
+
+
+</div>
+
+</div>
+
+</div>
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

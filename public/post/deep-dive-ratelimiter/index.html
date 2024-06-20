@@ -1,0 +1,966 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="技术面试中，对技术方案选型的考查尤为关键，没有系统总结输出，大概率说不清楚。接下来我准备了一系列的文章，帮助读者在面试中，就能把一些技术问题说清楚。" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/deep-dive-ratelimiter/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/post/deep-dive-ratelimiter/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/post/deep-dive-ratelimiter/" />
+  <meta property="og:title" content="一文说清楚分布式限流 | zy.chat" />
+  <meta property="og:description" content="技术面试中，对技术方案选型的考查尤为关键，没有系统总结输出，大概率说不清楚。接下来我准备了一系列的文章，帮助读者在面试中，就能把一些技术问题说清楚。" /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-06-18T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-06-18T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhangyi.chat/post/deep-dive-ratelimiter/"
+  },
+  "headline": "一文说清楚分布式限流",
+  
+  "datePublished": "2024-06-18T00:00:00Z",
+  "dateModified": "2024-06-18T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "张怡"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "zy.chat",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "技术面试中，对技术方案选型的考查尤为关键，没有系统总结输出，大概率说不清楚。接下来我准备了一系列的文章，帮助读者在面试中，就能把一些技术问题说清楚。"
+}
+</script>
+
+  
+
+  
+
+
+  <title>一文说清楚分布式限流 | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+<div class="flex flex-col justify-center">
+  <article class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert">
+    
+    
+    
+
+    <h1 class="lg:text-6xl">一文说清楚分布式限流</h1>
+
+    
+    
+    
+
+    <h2 id="需求背景">需求背景</h2>
+<p>限流作为防止系统过载的技术，是保护高并发系统稳定性的重要手段之一。当系统资源有限、处理能力有限时，限流可以对调用方的上游请求进行限制，以防止系统自身因资源耗尽而停止服务。</p>
+<p>而业务级限流，往往是指针对不同业务的要求，对<strong>多个维度配置不同阈值的策略</strong>，以此来规避用户突发流量、压测流量等的潜在风险。比如，aws lambda服务，openai的api服务等均有对用户维度、群组维度等配置不同额度的限流策略。</p>
+<h2 id="整体目标">整体目标</h2>
+<p>关于业务级限流架构设计，通常要达到以下目标：</p>
+<h3 id="功能性需求"><strong>功能性需求:</strong></h3>
+<ol>
+<li>让现有入口支持不同维度和阈值的并发限制，防止异常流量打垮系统；</li>
+<li>根据<strong>限流实时性和准确性</strong>的要求不同，可选择<strong>不同限流算法策略选型</strong>：区分是否需要平滑处理突发流量、是否需要动态调整限流规则、是否需要固定输出速率；</li>
+<li>根据<strong>限流器高可用和可扩展程度</strong>的不同，可选择<strong>不同的限流并发控制方案</strong>：单机限流和 集群限流，单机限流主要用于保护自身，集群限流主要用户保护依赖资源；</li>
+</ol>
+<h3 id="非功能性需求"><strong>非功能性需求:</strong></h3>
+<ol>
+<li>限流器本身最小化占用内存。</li>
+<li>限流器对用户请求的延迟影响。</li>
+</ol>
+<h2 id="常用限流算法">常用限流算法</h2>
+<p>从限流的实现算法不同可以分为 <code>固定窗口限流</code>、<code>滑动窗口限流</code>、<code>漏桶限流</code>、<code>令牌桶限流</code>等。</p>
+<h3 id="固定窗口限流-在生产环境基本不考虑">固定窗口限流 （<strong>在生产环境基本不考虑</strong>）</h3>
+<p>固定窗口限流算法是指在固定窗口时间内所允许通过的最大请求数，其原理是将时间划分为固定大小的窗口，在每个窗口内限制请求的数量或速率。</p>
+<p>该算法的优点实现简单，但存在请求分布不均、无法应对突发流量等问题。</p>
+<figure><img src="img.png"
+         alt="固定窗口限流(图片来源于网络)"/><figcaption>
+            <p>固定窗口限流(图片来源于网络)</p>
+        </figcaption>
+</figure>
+
+<p>如上，我们限制了 QPS 为 2，但是当遇到时间窗口的临界突变时，如 1s 中的后 500 ms 和第 2s 的前 500ms 时，虽然是加起来是 1s 时间，却可以被请求 4 次。</p>
+<h3 id="滑动窗口限流">滑动窗口限流</h3>
+<p>滑动窗口限流算法将原有的固定窗口时间划分为多个小窗口，在遇到下一个时间窗口之前调整窗口的范围，滚动计算请求量。当固定窗口时间划分越细，准确率越高，当然需要的存储空间越多。滑动窗口算法可以一定程度缓解固定窗口限流存在的请求分布不均的问题。</p>
+<figure><img src="img_1.png"
+         alt="滑动窗口限流(图片来源于网络)"/><figcaption>
+            <p>滑动窗口限流(图片来源于网络)</p>
+        </figcaption>
+</figure>
+
+<p>上图的示例中，每 500ms 滑动一次窗口，可以发现窗口滑动的间隔越短，时间窗口的临界突变问题发生的概率也就越小，不过只要有时间窗口的存在，还是有可能发生时间窗口的临界突变问题。</p>
+<h4 id="缺点"><strong>缺点：</strong></h4>
+<ol>
+<li>
+<p><strong>精度问题</strong>：滑动窗口限流算法的精度取决于窗口的大小和滑动的频率。如果窗口太大或滑动的频率太低，可能无法准确地控制流量。</p>
+</li>
+<li>
+<p><strong>资源消耗</strong>：滑动窗口限流算法需要记录窗口内的所有请求，这可能会消耗大量的内存。此外，滑动窗口的计算也可能消耗一定的CPU资源。</p>
+</li>
+<li>
+<p><strong>实现复杂性</strong>：相比于其他更简单的限流算法（如固定窗口或令牌桶），滑动窗口限流算法更复杂，需要更多的逻辑来维护和计算窗口。</p>
+</li>
+<li>
+<p><strong>无法处理突发流量</strong>：滑动窗口限流算法在面对突然的大量请求时可能无法有效地限制流量，因为它是基于过去的流量进行限制的。</p>
+</li>
+</ol>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300"><p>假设我们设置的限制是每秒100个请求，如果在一秒钟的开始时，瞬间就到达了100个请求，那么这一秒剩余的时间里，新的请求都会被拒绝，即使在这一秒结束时，实际的处理速度可能远低于每秒100个请求。</p>
+<p>另一方面，如果在一秒钟的结束时，瞬间到达了100个请求，那么在下一秒开始的时候，这些请求可能还在处理中，从而导致实际的处理速度超过了每秒100个请求的限制。</p>
+<p>综上所述，要想避免发生时间窗口的临界突变问题，限制突发流量，通常是使用一个单独的burst参数来设置限制值。</p>
+</span>
+</div>
+<h3 id="漏桶限流">漏桶限流</h3>
+<p>漏桶限流维护了一个固定容量的漏桶，请求以不定的速率流入漏桶，而漏桶以固定的速率流出。如果请求到达时，漏桶已满，则会触发拒绝策略。类似队列生产消费的场景，消费的速率等于限流阈值。漏桶限流主要用于流量整形，不管请求量如何，只会以固定速率放行请求。有效平滑突发流量，防止系统过载。适用于需要固定输出速率，平滑处理突发流量的场景。</p>
+<h4 id="缺点-1"><strong>缺点：</strong></h4>
+<ol>
+<li>
+<p><strong>无法处理突发流量</strong>：虽然漏桶算法可以平滑突发流量，但是如果有大量请求突然到来，超出桶的容量，就会导致请求被丢弃。但通常情况下短时间不超过系统承受能力的突发流量，并不会击垮系统。</p>
+</li>
+<li>
+<p><strong>资源利用率可能不高</strong>：在请求量较小的时候，由于出水速度是恒定的，无法根据系统实际情况进行调整，可能无法充分利用系统资源。</p>
+</li>
+</ol>
+<h3 id="令牌桶限流">令牌桶限流</h3>
+<p>令牌桶限流算法是一种流量控制策略，它将流量比作令牌，以固定的速度放入一个令牌桶中。当有新的请求到来时，需要从桶中取出一个令牌，如果桶中没有令牌，则请求被限制。</p>
+<h4 id="缺点-2"><strong>缺点：</strong></h4>
+<ol>
+<li>
+<p><strong>资源消耗</strong>：令牌桶算法需要存储和更新令牌桶的状态，这可能会消耗一定的内存和CPU资源。</p>
+</li>
+<li>
+<p><strong>实现复杂性</strong>：相比于简单的计数器或滑动窗口限流算法，令牌桶算法更复杂，需要更多的逻辑来维护和更新令牌桶。</p>
+</li>
+<li>
+<p><strong>需指定合适的突发流量值</strong>：由于令牌桶算法允许一定程度的突发流量（即桶中积累的令牌），如果突发流量过大，可能会短时间内超过预设的流量限制。令牌桶算法的实现，往往通过burst值配置突发流量，通过limit值来调整超限请求的处理方式，拒绝或阻塞请求。</p>
+</li>
+</ol>
+<h2 id="业界方案调研">业界方案调研</h2>
+<p>单机限流实现方案较成熟: 比如<a href="https://github.com/uber-go/ratelimit" target="_blank" rel="noopener">uber ratelimit</a>、<a href="https://golang.org/x/time/rate" target="_blank" rel="noopener">golang time/rate标准库</a>等； 本文主要分析分布式集群限流场景。</p>
+<p>对于分布式限流的方案，往往在多个实例的微服务场景下，考虑当瞬间流量访问同一资源，如何进行分布式并发计数。本质上是多实例并发计数的问题，存在多种开源解决方案，比如Sentinel (Java)、 <a href="https://github.com/redisson/redisson" target="_blank" rel="noopener">redission</a> 、istio 等。</p>
+<p>针对集群分布式限流的实现，通常根据并发计数的方式不同，划分成两种大类：</p>
+<ol>
+<li>基于集中式并发控制，但受限于<strong>redis单节点</strong>或<strong>多节点zk集群</strong>的并发极限。</li>
+<li>基于分片式并发控制，结合本地单机缓存+负载均衡器，将集群限流转换为单机限流。</li>
+</ol>
+<figure><img src="img_3.png"
+         alt="分布式限流"/><figcaption>
+            <p>分布式限流</p>
+        </figcaption>
+</figure>
+
+<h3 id="基于集中式并发控制的分布式限流">基于集中式并发控制的分布式限流</h3>
+<ol>
+<li><strong>方案一：基于redis+lua 可实现多种限流算法</strong></li>
+</ol>
+<ul>
+<li>滑动窗口限流策略实现</li>
+</ul>
+<blockquote>
+<p>源码实现参考：https://github.com/BeCrafter/go-ratelimiter/blob/main/lua_script.go</p>
+</blockquote>
+<ul>
+<li>令牌桶限流策略实现，应对带有突发流量的限流场景。</li>
+</ul>
+<blockquote>
+<p>源码实现参考：https://github.com/go-redis/redis_rate/blob/v10/rate.go</p>
+</blockquote>
+<ol start="2">
+<li><strong>方案二：redis+ 批量并发取数，单节点批量获取并发计数+延迟归还+pubsub:</strong></li>
+</ol>
+<ul>
+<li>为了解决redis单节点瓶颈的问题，单节点批量从redis中取数，然后在本地进行消耗，当消耗完再去redis取；若远程没有数则开始限流。</li>
+</ul>
+<blockquote>
+<ol>
+<li>客户端首先从本地获取数据，当本地数耗尽时，从Redis批量获取数据(batchNum)。</li>
+<li>客户端使用数据后，延迟一段时间(delayReturn)后进行批量归还。</li>
+<li>如果从Redis中获取不到值，直接拒绝，并订阅可取数消息，收到消息后进行置位以便下次直接从Redis获取数据。</li>
+<li>在服务端执行归还操作或判断超时时，发布可取数消息以通知客户端。</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>该方案可以近似减少batchNum倍对redis的压力，实现需要客户端和服务端之间的消息通信机制，并涉及到对本地数据和Redis数据的处理、消息订阅和发布等操作, 存在一定误差。</p>
+</li>
+<li>
+<p>比如极端情况有的节点还有结余时，其他节点被限制。误差率与 batchNum 和delayReturn的设置成反相关，当机器规模越大、批量数越大而阈值越小时，误差越大。</p>
+</li>
+<li>
+<p>因此，可以根据并发阈值&amp;误差率上限进行设置batchNum、delayReturn。</p>
+</li>
+</ul>
+<ol start="3">
+<li><strong>方案三：基于分布式协调服务 （该方案来源于网络，未验证过）</strong></li>
+</ol>
+<blockquote>
+<p>“在 ZooKeeper 中创建一个节点作为令牌桶，节点的数据代表令牌的数量，设置一个定时任务定期向 ZooKeeper 中的令牌桶补充令牌。当一个请求到达时，向 ZooKeeper 申请一个令牌，即获取节点的分布式锁然后将节点的数据减 1，如果操作成功则表示成功获取了令牌，可以处理请求，如果操作失败则表示令牌已经用完，请求被拒绝或等待。</p>
+</blockquote>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300">这个方案可以实现精确的全局限流，避免单点故障，但是它的实现较为复杂，且对 ZooKeeper 的性能有较高要求，可能会成为系统的瓶颈。”</span>
+</div>
+<ul>
+<li><a href="https://cloud.tencent.com/developer/article/2396997" target="_blank" rel="noopener">https://cloud.tencent.com/developer/article/2396997</a></li>
+</ul>
+<h3 id="基于分片式并发控制的分布式限流">基于分片式并发控制的分布式限流</h3>
+<p>分片的目的是为了分散单点的压力。这里我们将分别支持两种维度的分片策略限流实现。</p>
+<ol>
+<li><strong>方案一：客户端分片限流</strong>，适用于QPS高（远超客户端节点数时），客户端流量均衡的场景。同时因为没有网络调用，因此网络开销较小。</li>
+</ol>
+<ul>
+<li>客户端分片适用于集群内客户端节点流量均衡或者流量分布稳定的场景，直接将集群并发控制阈值按比例分配给每个节点。</li>
+<li>该策略有一定的要求：即要求阈值至少要大于客户端数，当这两个值差距越大时误差越小。</li>
+</ul>
+<ol start="2">
+<li><strong>方案二：服务端分片限流</strong>，使用多个服务端节点来共同承担单key高QPS的压力，不管客户端流量是否均衡都适用。缺点则是单次限流需要一次网络调用。</li>
+</ol>
+<ul>
+<li>服务端分为多个节点共同应对客户端的请求；增加服务端节点数理论上可以支持无限大的并发量；</li>
+<li>客户端以RR策略来请求服务端从而达到负载均衡的作用。</li>
+</ul>
+<h3 id="限流最佳实践">限流最佳实践</h3>
+<ul>
+<li>提供限流阈值动态调整的方式。</li>
+<li>约定合理的限流错误码，429等。</li>
+<li>日志监控，记录限流触发时刻相关信息。</li>
+<li>提供限流功能的热加载开关，方便降级。</li>
+<li>限流触发时的监控和告警，确保服务正常运行的可观测。</li>
+<li>根据现有技术栈进行架构设计，限流器与业务逻辑解耦。</li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>本文介绍了分布式限流的需求、常用限流算法（如固定窗口、滑动窗口、漏桶、令牌桶）、业界方案（如基于Redis+Lua、分片式限流等），以及分布式限流方案的实现原理和比较。</p>
+<ul>
+<li>业务级限流是保护高并发系统稳定性的重要手段。</li>
+<li>常用限流算法包括固定窗口、滑动窗口、漏桶、令牌桶，它们的适用场景以及不足之处。</li>
+<li>分布式限流可基于Redis+Lua实现多种限流算法的集中式并发控制，也可采用分片式并发控制的策略。</li>
+<li>基于分片式并发控制的分布式限流各有优缺点，客户端分片限流适用于流量均衡稳定场景，服务端分片限流适用于承担高QPS压力。</li>
+<li>不同分布式限流方案有各自复杂性和适用场景。</li>
+</ul>
+<h2 id="相关开源项目链接">相关开源项目链接：</h2>
+<ol>
+<li>无状态限流: <a href="https://github.com/Netflix/Hystrix" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix</a> 24k Stars，java语言</li>
+<li>Bucket4j令牌桶算法: <a href="https://github.com/bucket4j/bucket4j" target="_blank" rel="noopener">https://github.com/bucket4j/bucket4j</a> 2.2K Stars，java语言</li>
+<li>Sentinel 中大规模企业级限流：https://github.com/alibaba/Sentinel 22.1k Stars，java语言</li>
+</ol>
+
+  </article>
+
+<div class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert mt-5">
+  <div class="max-w-prose print:hidden">
+  
+
+
+
+  
+
+<div class="flex justify-center">
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/rate-limiter/">rate limiter</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/distributed-system/">distributed system</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/go-redis-lua/">go-redis lua</a>
+  
+</div>
+
+
+  
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+
+<div class="flex">
+  
+  
+  <img
+    class="mr-4 h-24 w-24 rounded-full"
+    width="96"
+    height="96"
+    alt="张怡"
+  src="/author/%E5%BC%A0%E6%80%A1/avatar_hud4b4d875cce5e0778ef5b9cd48471f21_880315_192x192_fill_q80_lanczos_center.jpg"
+  loading="lazy"
+  />
+  
+  <div class="place-self-center">
+    <div class="text-[0.6rem] uppercase leading-3 text-neutral-500 dark:text-neutral-400">
+      Authors
+    </div>
+    <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+      <a href="https://zhangyi.chat/" class="no-underline">
+      张怡
+      </a>
+    </div>
+
+    
+    <div class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+    .
+    </div>
+    
+
+
+    
+
+    <div class="text-2xl sm:text-lg pt-1">
+
+      
+<div class="flex flex-wrap text-neutral-500 dark:text-neutral-300">
+  
+    
+    
+    
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="mailto:zhangyiscut@gmail.com"
+      
+      aria-label="At-Symbol"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 1 0-8 0a4 4 0 0 0 8 0Zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-9 9m4.5-1.206a8.959 8.959 0 0 1-4.5 1.207"/></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://github.com/markzhang0928"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Github"
+    ><svg style="height: 1em;" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://www.linkedin.com/"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Linkedin"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg></a>
+  
+</div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+
+
+
+
+  
+  
+    
+    
+    
+<div class="pt-1">
+  <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+  <div class="flex justify-between pt-2">
+    <span>
+      
+        <a class="group flex no-underline" href="/post/golang_context/">
+          <span
+            class="me-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline rtl:hidden">&larr;</span></span>
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Goroutine 上下文context源码走读</span>
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                Jun 12, 2024
+              
+            </span>
+          </span>
+        </a>
+      
+    </span>
+    <span>
+      
+    </span>
+  </div>
+</div>
+
+
+
+  
+  
+
+
+
+</div>
+
+</div>
+
+</div>
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

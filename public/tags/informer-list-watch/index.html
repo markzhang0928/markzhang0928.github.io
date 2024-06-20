@@ -1,0 +1,586 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="A highly-customizable Hugo résumé theme powered by Hugo Blox Builder." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/tags/informer-list-watch/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <link rel="alternate" href="/tags/informer-list-watch/index.xml" type="application/rss+xml" title="zy.chat" />
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/tags/informer-list-watch/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/tags/informer-list-watch/" />
+  <meta property="og:title" content="Informer List-Watch | zy.chat" />
+  <meta property="og:description" content="A highly-customizable Hugo résumé theme powered by Hugo Blox Builder." /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta property="og:updated_time" content="2024-05-19T00:00:00&#43;00:00" />
+    
+  
+
+  
+
+
+
+
+  <title>Informer List-Watch | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+
+<div class="max-w-prose mx-auto flex justify-center">
+  <article class="prose prose-slate lg:prose-xl dark:prose-invert">
+    <h1 class="lg:text-6xl">Informer List-Watch</h1>
+    
+  </article>
+</div>
+
+
+
+
+<div class="flex justify-center">
+
+  <div class="mt-16 sm:mt-20">
+<div class="flex max-w-3xl flex-col space-y-16">
+
+
+  
+  
+
+
+
+<article class="md:grid md:grid-cols-4 md:items-baseline">
+  <div class="md:col-span-3 group relative flex flex-col items-start">
+    <h2 class="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+      <div
+        class="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 dark:bg-zinc-800/50 sm:-inset-x-6 sm:rounded-2xl"></div>
+      <a href="/post/client-go-source-code-walkthrough/"><span
+        class="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl"></span><span class="relative z-10">Client-go源码走读</span></a>
+    </h2>
+    <time
+      class="md:hidden relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500 pl-1"
+      datetime="2024-05-19">
+      May 19, 2024
+    </time>
+    <p class="relative z-10 mt-2 text-sm text-zinc-600 dark:text-zinc-400">其实类似的文章这段时间梳理过很多，学习笔记类的文章价值难道真的只是知识搬运工？</p>
+    <div aria-hidden="true" class="relative z-10 mt-4 flex items-center text-sm font-medium text-primary-500">
+    Read more
+      <svg aria-hidden="true" class="ml-1 h-4 w-4 stroke-current" fill="none" viewBox="0 0 16 16">
+        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      </svg>
+    </div>
+  </div>
+  <time
+    class="mt-1 hidden md:block relative z-10 order-first mb-3 flex items-center text-sm text-zinc-400 dark:text-zinc-500"
+    datetime="2024-05-19">May 19, 2024
+  </time>
+</article>
+
+  
+
+  </div>
+</div>
+
+
+</div>
+
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

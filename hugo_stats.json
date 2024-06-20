@@ -67,7 +67,6 @@
       "bg-primary-700",
       "bg-transparent",
       "bg-white",
-      "bg-yellow-100",
       "bg-zinc-100",
       "bg-zinc-50",
       "block",
@@ -83,7 +82,6 @@
       "dark:bg-primary-600",
       "dark:bg-primary-900",
       "dark:bg-slate-900",
-      "dark:bg-yellow-900",
       "dark:bg-zinc-800",
       "dark:bg-zinc-800/50",
       "dark:block",
@@ -301,7 +299,6 @@
       "text-primary-400",
       "text-primary-500",
       "text-primary-800",
-      "text-red-400",
       "text-right",
       "text-slate-700",
       "text-sm",
@@ -327,7 +324,6 @@
       "z-20"
     ],
     "ids": [
-      "-缺点",
       "01---基于nri实现精细化且可拔插的容器资源管理---曹贺-任强",
       "05---godel-scheduler字节开源内部超大规模在离线统一调度器---任玉泉字节跳动",
       "1-emptyctx-contextbackgroud--contexttodo-实现了emptyctx类",

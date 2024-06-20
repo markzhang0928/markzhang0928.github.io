@@ -2,46 +2,151 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://example.com/post/get-started/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/post/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/tags/academic/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/tags/distributed-system/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/post/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/tags/go-redis-lua/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/tags/markdown/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/tags/rate-limiter/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/tags/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/tags/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/tags/wowchemy/</loc>
-    <lastmod>2023-10-27T00:00:00+00:00</lastmod>
+    <loc>https://zhangyi.chat/post/deep-dive-ratelimiter/</loc>
+    <lastmod>2024-06-18T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/projects/</loc>
+    <loc>https://zhangyi.chat/tags/data-types/</loc>
+    <lastmod>2024-06-12T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/golang-context/</loc>
+    <lastmod>2024-06-12T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/golang_context/</loc>
+    <lastmod>2024-06-12T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/golang-channel/</loc>
+    <lastmod>2024-06-03T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/golang_channel/</loc>
+    <lastmod>2024-06-03T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/select-for-range/</loc>
+    <lastmod>2024-06-03T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/golang-map/</loc>
+    <lastmod>2024-05-31T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/golang-slice/</loc>
+    <lastmod>2024-05-31T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/golang_map/</loc>
+    <lastmod>2024-05-31T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/golang_slice/</loc>
+    <lastmod>2024-05-31T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/</loc>
+    <lastmod>2024-05-24T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/kong-ai-gateway/</loc>
+    <lastmod>2024-05-24T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/kong-gateway-operator/</loc>
+    <lastmod>2024-05-24T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/llm/</loc>
+    <lastmod>2024-05-24T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/bytedance/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/client-go-source-code-walkthrough/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/informer-list-watch/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/k8s-workerqueue/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/katalyst-core/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/kcd-2024-shanghai-01/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/kubernetes/</loc>
+    <lastmod>2024-05-19T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/tags/godel-scheduler/</loc>
+    <lastmod>2024-04-25T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/kcd-2024-shanghai-05/</loc>
+    <lastmod>2024-04-25T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/kubernetes-mandala-updates/</loc>
+    <lastmod>2024-04-25T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/projects/</loc>
     <lastmod>2023-10-24T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/experience/</loc>
+    <loc>https://zhangyi.chat/experience/</loc>
     <lastmod>2023-10-24T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/</loc>
+    <loc>https://zhangyi.chat/</loc>
     <lastmod>2023-10-24T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/uses/</loc>
+    <loc>https://zhangyi.chat/post/golang_concurrency/</loc>
     <changefreq>weekly</changefreq>
   </url><url>
-    <loc>https://example.com/categories/</loc>
+    <loc>https://zhangyi.chat/post/golang_sync_map/</loc>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/post/golang_sync_tools/</loc>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/uses/</loc>
+    <changefreq>weekly</changefreq>
+  </url><url>
+    <loc>https://zhangyi.chat/categories/</loc>
     <changefreq>weekly</changefreq>
   </url>
 </urlset>

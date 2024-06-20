@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>go-redis lua | zy.chat</title>
+    <link>https://zhangyi.chat/tags/go-redis-lua/</link>
+      <atom:link href="https://zhangyi.chat/tags/go-redis-lua/index.xml" rel="self" type="application/rss+xml" />
+    <description>go-redis lua</description>
+    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Tue, 18 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png</url>
+      <title>go-redis lua</title>
+      <link>https://zhangyi.chat/tags/go-redis-lua/</link>
+    </image>
+    
+    <item>
+      <title>一文说清楚分布式限流</title>
+      <link>https://zhangyi.chat/post/deep-dive-ratelimiter/</link>
+      <pubDate>Tue, 18 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>https://zhangyi.chat/post/deep-dive-ratelimiter/</guid>
+      <description>&lt;h2 id=&#34;需求背景&#34;&gt;需求背景&lt;/h2&gt;
+&lt;p&gt;限流作为防止系统过载的技术，是保护高并发系统稳定性的重要手段之一。当系统资源有限、处理能力有限时，限流可以对调用方的上游请求进行限制，以防止系统自身因资源耗尽而停止服务。&lt;/p&gt;
+&lt;p&gt;而业务级限流，往往是指针对不同业务的要求，对&lt;strong&gt;多个维度配置不同阈值的策略&lt;/strong&gt;，以此来规避用户突发流量、压测流量等的潜在风险。比如，aws lambda服务，openai的api服务等均有对用户维度、群组维度等配置不同额度的限流策略。&lt;/p&gt;
+&lt;h2 id=&#34;整体目标&#34;&gt;整体目标&lt;/h2&gt;
+&lt;p&gt;关于业务级限流架构设计，通常要达到以下目标：&lt;/p&gt;
+&lt;h3 id=&#34;功能性需求&#34;&gt;&lt;strong&gt;功能性需求:&lt;/strong&gt;&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;让现有入口支持不同维度和阈值的并发限制，防止异常流量打垮系统；&lt;/li&gt;
+&lt;li&gt;根据&lt;strong&gt;限流实时性和准确性&lt;/strong&gt;的要求不同，可选择&lt;strong&gt;不同限流算法策略选型&lt;/strong&gt;：区分是否需要平滑处理突发流量、是否需要动态调整限流规则、是否需要固定输出速率；&lt;/li&gt;
+&lt;li&gt;根据&lt;strong&gt;限流器高可用和可扩展程度&lt;/strong&gt;的不同，可选择&lt;strong&gt;不同的限流并发控制方案&lt;/strong&gt;：单机限流和 集群限流，单机限流主要用于保护自身，集群限流主要用户保护依赖资源；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;非功能性需求&#34;&gt;&lt;strong&gt;非功能性需求:&lt;/strong&gt;&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;限流器本身最小化占用内存。&lt;/li&gt;
+&lt;li&gt;限流器对用户请求的延迟影响。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;常用限流算法&#34;&gt;常用限流算法&lt;/h2&gt;
+&lt;p&gt;从限流的实现算法不同可以分为 &lt;code&gt;固定窗口限流&lt;/code&gt;、&lt;code&gt;滑动窗口限流&lt;/code&gt;、&lt;code&gt;漏桶限流&lt;/code&gt;、&lt;code&gt;令牌桶限流&lt;/code&gt;等。&lt;/p&gt;
+&lt;h3 id=&#34;固定窗口限流-在生产环境基本不考虑&#34;&gt;固定窗口限流 （&lt;strong&gt;在生产环境基本不考虑&lt;/strong&gt;）&lt;/h3&gt;
+&lt;p&gt;固定窗口限流算法是指在固定窗口时间内所允许通过的最大请求数，其原理是将时间划分为固定大小的窗口，在每个窗口内限制请求的数量或速率。&lt;/p&gt;
+&lt;p&gt;该算法的优点实现简单，但存在请求分布不均、无法应对突发流量等问题。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&#34;img.png&#34;
+         alt=&#34;固定窗口限流(图片来源于网络)&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;固定窗口限流(图片来源于网络)&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;如上，我们限制了 QPS 为 2，但是当遇到时间窗口的临界突变时，如 1s 中的后 500 ms 和第 2s 的前 500ms 时，虽然是加起来是 1s 时间，却可以被请求 4 次。&lt;/p&gt;
+&lt;h3 id=&#34;滑动窗口限流&#34;&gt;滑动窗口限流&lt;/h3&gt;
+&lt;p&gt;滑动窗口限流算法将原有的固定窗口时间划分为多个小窗口，在遇到下一个时间窗口之前调整窗口的范围，滚动计算请求量。当固定窗口时间划分越细，准确率越高，当然需要的存储空间越多。滑动窗口算法可以一定程度缓解固定窗口限流存在的请求分布不均的问题。&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&#34;img_1.png&#34;
+         alt=&#34;滑动窗口限流(图片来源于网络)&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;滑动窗口限流(图片来源于网络)&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;上图的示例中，每 500ms 滑动一次窗口，可以发现窗口滑动的间隔越短，时间窗口的临界突变问题发生的概率也就越小，不过只要有时间窗口的存在，还是有可能发生时间窗口的临界突变问题。&lt;/p&gt;
+&lt;h4 id=&#34;缺点&#34;&gt;&lt;strong&gt;缺点：&lt;/strong&gt;&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;精度问题&lt;/strong&gt;：滑动窗口限流算法的精度取决于窗口的大小和滑动的频率。如果窗口太大或滑动的频率太低，可能无法准确地控制流量。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;资源消耗&lt;/strong&gt;：滑动窗口限流算法需要记录窗口内的所有请求，这可能会消耗大量的内存。此外，滑动窗口的计算也可能消耗一定的CPU资源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;实现复杂性&lt;/strong&gt;：相比于其他更简单的限流算法（如固定窗口或令牌桶），滑动窗口限流算法更复杂，需要更多的逻辑来维护和计算窗口。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;无法处理突发流量&lt;/strong&gt;：滑动窗口限流算法在面对突然的大量请求时可能无法有效地限制流量，因为它是基于过去的流量进行限制的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;p&gt;假设我们设置的限制是每秒100个请求，如果在一秒钟的开始时，瞬间就到达了100个请求，那么这一秒剩余的时间里，新的请求都会被拒绝，即使在这一秒结束时，实际的处理速度可能远低于每秒100个请求。&lt;/p&gt;
+&lt;p&gt;另一方面，如果在一秒钟的结束时，瞬间到达了100个请求，那么在下一秒开始的时候，这些请求可能还在处理中，从而导致实际的处理速度超过了每秒100个请求的限制。&lt;/p&gt;
+&lt;p&gt;综上所述，要想避免发生时间窗口的临界突变问题，限制突发流量，通常是使用一个单独的burst参数来设置限制值。&lt;/p&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;漏桶限流&#34;&gt;漏桶限流&lt;/h3&gt;
+&lt;p&gt;漏桶限流维护了一个固定容量的漏桶，请求以不定的速率流入漏桶，而漏桶以固定的速率流出。如果请求到达时，漏桶已满，则会触发拒绝策略。类似队列生产消费的场景，消费的速率等于限流阈值。漏桶限流主要用于流量整形，不管请求量如何，只会以固定速率放行请求。有效平滑突发流量，防止系统过载。适用于需要固定输出速率，平滑处理突发流量的场景。&lt;/p&gt;
+&lt;h4 id=&#34;缺点-1&#34;&gt;&lt;strong&gt;缺点：&lt;/strong&gt;&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;无法处理突发流量&lt;/strong&gt;：虽然漏桶算法可以平滑突发流量，但是如果有大量请求突然到来，超出桶的容量，就会导致请求被丢弃。但通常情况下短时间不超过系统承受能力的突发流量，并不会击垮系统。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;资源利用率可能不高&lt;/strong&gt;：在请求量较小的时候，由于出水速度是恒定的，无法根据系统实际情况进行调整，可能无法充分利用系统资源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;令牌桶限流&#34;&gt;令牌桶限流&lt;/h3&gt;
+&lt;p&gt;令牌桶限流算法是一种流量控制策略，它将流量比作令牌，以固定的速度放入一个令牌桶中。当有新的请求到来时，需要从桶中取出一个令牌，如果桶中没有令牌，则请求被限制。&lt;/p&gt;
+&lt;h4 id=&#34;缺点-2&#34;&gt;&lt;strong&gt;缺点：&lt;/strong&gt;&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;资源消耗&lt;/strong&gt;：令牌桶算法需要存储和更新令牌桶的状态，这可能会消耗一定的内存和CPU资源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;实现复杂性&lt;/strong&gt;：相比于简单的计数器或滑动窗口限流算法，令牌桶算法更复杂，需要更多的逻辑来维护和更新令牌桶。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;需指定合适的突发流量值&lt;/strong&gt;：由于令牌桶算法允许一定程度的突发流量（即桶中积累的令牌），如果突发流量过大，可能会短时间内超过预设的流量限制。令牌桶算法的实现，往往通过burst值配置突发流量，通过limit值来调整超限请求的处理方式，拒绝或阻塞请求。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;业界方案调研&#34;&gt;业界方案调研&lt;/h2&gt;
+&lt;p&gt;单机限流实现方案较成熟: 比如&lt;a href=&#34;https://github.com/uber-go/ratelimit&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;uber ratelimit&lt;/a&gt;、&lt;a href=&#34;https://golang.org/x/time/rate&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;golang time/rate标准库&lt;/a&gt;等； 本文主要分析分布式集群限流场景。&lt;/p&gt;
+&lt;p&gt;对于分布式限流的方案，往往在多个实例的微服务场景下，考虑当瞬间流量访问同一资源，如何进行分布式并发计数。本质上是多实例并发计数的问题，存在多种开源解决方案，比如Sentinel (Java)、 &lt;a href=&#34;https://github.com/redisson/redisson&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;redission&lt;/a&gt; 、istio 等。&lt;/p&gt;
+&lt;p&gt;针对集群分布式限流的实现，通常根据并发计数的方式不同，划分成两种大类：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;基于集中式并发控制，但受限于&lt;strong&gt;redis单节点&lt;/strong&gt;或&lt;strong&gt;多节点zk集群&lt;/strong&gt;的并发极限。&lt;/li&gt;
+&lt;li&gt;基于分片式并发控制，结合本地单机缓存+负载均衡器，将集群限流转换为单机限流。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;figure&gt;&lt;img src=&#34;img_3.png&#34;
+         alt=&#34;分布式限流&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;分布式限流&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&#34;基于集中式并发控制的分布式限流&#34;&gt;基于集中式并发控制的分布式限流&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;方案一：基于redis+lua 可实现多种限流算法&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;滑动窗口限流策略实现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;源码实现参考：https://github.com/BeCrafter/go-ratelimiter/blob/main/lua_script.go&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;令牌桶限流策略实现，应对带有突发流量的限流场景。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;源码实现参考：https://github.com/go-redis/redis_rate/blob/v10/rate.go&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;&lt;strong&gt;方案二：redis+ 批量并发取数，单节点批量获取并发计数+延迟归还+pubsub:&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;为了解决redis单节点瓶颈的问题，单节点批量从redis中取数，然后在本地进行消耗，当消耗完再去redis取；若远程没有数则开始限流。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;客户端首先从本地获取数据，当本地数耗尽时，从Redis批量获取数据(batchNum)。&lt;/li&gt;
+&lt;li&gt;客户端使用数据后，延迟一段时间(delayReturn)后进行批量归还。&lt;/li&gt;
+&lt;li&gt;如果从Redis中获取不到值，直接拒绝，并订阅可取数消息，收到消息后进行置位以便下次直接从Redis获取数据。&lt;/li&gt;
+&lt;li&gt;在服务端执行归还操作或判断超时时，发布可取数消息以通知客户端。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;该方案可以近似减少batchNum倍对redis的压力，实现需要客户端和服务端之间的消息通信机制，并涉及到对本地数据和Redis数据的处理、消息订阅和发布等操作, 存在一定误差。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;比如极端情况有的节点还有结余时，其他节点被限制。误差率与 batchNum 和delayReturn的设置成反相关，当机器规模越大、批量数越大而阈值越小时，误差越大。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;因此，可以根据并发阈值&amp;amp;误差率上限进行设置batchNum、delayReturn。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;&lt;strong&gt;方案三：基于分布式协调服务 （该方案来源于网络，未验证过）&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“在 ZooKeeper 中创建一个节点作为令牌桶，节点的数据代表令牌的数量，设置一个定时任务定期向 ZooKeeper 中的令牌桶补充令牌。当一个请求到达时，向 ZooKeeper 申请一个令牌，即获取节点的分布式锁然后将节点的数据减 1，如果操作成功则表示成功获取了令牌，可以处理请求，如果操作失败则表示令牌已经用完，请求被拒绝或等待。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;这个方案可以实现精确的全局限流，避免单点故障，但是它的实现较为复杂，且对 ZooKeeper 的性能有较高要求，可能会成为系统的瓶颈。”&lt;/span&gt;
+&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://cloud.tencent.com/developer/article/2396997&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://cloud.tencent.com/developer/article/2396997&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;基于分片式并发控制的分布式限流&#34;&gt;基于分片式并发控制的分布式限流&lt;/h3&gt;
+&lt;p&gt;分片的目的是为了分散单点的压力。这里我们将分别支持两种维度的分片策略限流实现。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;方案一：客户端分片限流&lt;/strong&gt;，适用于QPS高（远超客户端节点数时），客户端流量均衡的场景。同时因为没有网络调用，因此网络开销较小。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;客户端分片适用于集群内客户端节点流量均衡或者流量分布稳定的场景，直接将集群并发控制阈值按比例分配给每个节点。&lt;/li&gt;
+&lt;li&gt;该策略有一定的要求：即要求阈值至少要大于客户端数，当这两个值差距越大时误差越小。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;&lt;strong&gt;方案二：服务端分片限流&lt;/strong&gt;，使用多个服务端节点来共同承担单key高QPS的压力，不管客户端流量是否均衡都适用。缺点则是单次限流需要一次网络调用。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;服务端分为多个节点共同应对客户端的请求；增加服务端节点数理论上可以支持无限大的并发量；&lt;/li&gt;
+&lt;li&gt;客户端以RR策略来请求服务端从而达到负载均衡的作用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;限流最佳实践&#34;&gt;限流最佳实践&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;提供限流阈值动态调整的方式。&lt;/li&gt;
+&lt;li&gt;约定合理的限流错误码，429等。&lt;/li&gt;
+&lt;li&gt;日志监控，记录限流触发时刻相关信息。&lt;/li&gt;
+&lt;li&gt;提供限流功能的热加载开关，方便降级。&lt;/li&gt;
+&lt;li&gt;限流触发时的监控和告警，确保服务正常运行的可观测。&lt;/li&gt;
+&lt;li&gt;根据现有技术栈进行架构设计，限流器与业务逻辑解耦。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;本文介绍了分布式限流的需求、常用限流算法（如固定窗口、滑动窗口、漏桶、令牌桶）、业界方案（如基于Redis+Lua、分片式限流等），以及分布式限流方案的实现原理和比较。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;业务级限流是保护高并发系统稳定性的重要手段。&lt;/li&gt;
+&lt;li&gt;常用限流算法包括固定窗口、滑动窗口、漏桶、令牌桶，它们的适用场景以及不足之处。&lt;/li&gt;
+&lt;li&gt;分布式限流可基于Redis+Lua实现多种限流算法的集中式并发控制，也可采用分片式并发控制的策略。&lt;/li&gt;
+&lt;li&gt;基于分片式并发控制的分布式限流各有优缺点，客户端分片限流适用于流量均衡稳定场景，服务端分片限流适用于承担高QPS压力。&lt;/li&gt;
+&lt;li&gt;不同分布式限流方案有各自复杂性和适用场景。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;相关开源项目链接&#34;&gt;相关开源项目链接：&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;无状态限流: &lt;a href=&#34;https://github.com/Netflix/Hystrix&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/Netflix/Hystrix&lt;/a&gt; 24k Stars，java语言&lt;/li&gt;
+&lt;li&gt;Bucket4j令牌桶算法: &lt;a href=&#34;https://github.com/bucket4j/bucket4j&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/bucket4j/bucket4j&lt;/a&gt; 2.2K Stars，java语言&lt;/li&gt;
+&lt;li&gt;Sentinel 中大规模企业级限流：https://github.com/alibaba/Sentinel 22.1k Stars，java语言&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

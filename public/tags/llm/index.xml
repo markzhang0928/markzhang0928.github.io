@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>LLM | zy.chat</title>
+    <link>https://zhangyi.chat/tags/llm/</link>
+      <atom:link href="https://zhangyi.chat/tags/llm/index.xml" rel="self" type="application/rss+xml" />
+    <description>LLM</description>
+    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Fri, 24 May 2024 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png</url>
+      <title>LLM</title>
+      <link>https://zhangyi.chat/tags/llm/</link>
+    </image>
+    
+    <item>
+      <title>KCD 2024 SHANGHAI AICloud - 04 Kong AI Gateway &amp; Kong Gateway Operator</title>
+      <link>https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/</link>
+      <pubDate>Fri, 24 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://zhangyi.chat/post/kcd-2024-shanghai-04-aicloud/</guid>
+      <description>&lt;h2 id=&#34;用-operator-将-llm-和-gateway-结合的更容易---张晋涛kong-inc&#34;&gt;用 Operator 将 LLM 和 Gateway 结合的更容易 - 张晋涛，Kong Inc.&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;总结:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;演讲者先介绍了调用 LLM API 的时候需要注意的问题，包括安全性、成本、可靠性、可观测性与配额等多方面，并以此引入了 AI Gateway 的概念。&lt;/li&gt;
+&lt;li&gt;AI Gateway通过插件的方式，集成了多种在线和私有化部署的模型，进行认证授权密钥的管理，以及可观测服务的集成，甚至无须编码将LLM应用与后端服务集成。&lt;/li&gt;
+&lt;li&gt;此外，他还介绍了Kong Gateway Operator，通过 CRD 以及 Kubernetes 的 Gateway API 以更加便利的形式管理 AI Gateway 的资源，更好地与 Kubernetes 的生态系统集成。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;为什么llms-需要-gateway&#34;&gt;为什么LLMs 需要 Gateway&lt;/h3&gt;
+&lt;h4 id=&#34;基本开发场景&#34;&gt;基本开发场景&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;调用 LLM的API&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;传递参数/prompt&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;处理响应结果&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;调用-llm的api需要注意什么&#34;&gt;调用 LLM的API需要注意什么&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 1. 安全性
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 1.1 认证信息API Key的管理
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 1.2 请求内容的安全性/合规性
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 2. 成本
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 2.1 缓存请求响应(可选)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 3. 可靠性
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 3.1 供应商API的SLA
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 4. 可观测性
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - Requests
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - Tokens/Cost
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 5. 限制与配额
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - RPM &amp;amp; RPD
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - TPM &amp;amp; TPD
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 6. 版本兼容性
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - API/模型版本升级等
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 7. 错误处理
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 异常重试
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - Fallback Response
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- 8. 依赖管理
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 多种备用模型
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     - 避免单一依赖
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;ai-gateway的能力&#34;&gt;AI Gateway的能力&lt;/h3&gt;
+&lt;figure&gt;&lt;img src=&#34;ai_proxy.png&#34;
+         alt=&#34;ai_proxy&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;ai_proxy&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&#34;认证和授权&#34;&gt;认证和授权&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;LLM API 的密钥可通过AI Gateway统一管理&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Environment variables&lt;/li&gt;
+&lt;li&gt;AWS Secrets Manager&lt;/li&gt;
+&lt;li&gt;GCP Secrets Manager&lt;/li&gt;
+&lt;li&gt;Azure Key Vaults&lt;/li&gt;
+&lt;li&gt;HashiCorp Vault&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可使用Kong AI Gateway原生的多种认证插件进行集成&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;无须编码即可将llm应用到原有api调用流程中&#34;&gt;无须编码即可将LLM应用到原有API调用流程中&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;AI Response Transformer: 设置prompt直接处理响应&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;AI Response Transformer: 设置prompt直接处理请求&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;&lt;img src=&#34;flow_chart.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&#34;ai-prompt-guard--prompt-防火墙&#34;&gt;AI Prompt Guard – prompt 防火墙&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;通过 Allow Patterns/Deny Patterns进行特定范围 prompt的管理&lt;/li&gt;
+&lt;li&gt;防止一些违规或者不安全的内容&lt;/li&gt;
+&lt;li&gt;AI Prompt Decorator
+&lt;ul&gt;
+&lt;li&gt;统一规则设置&lt;/li&gt;
+&lt;li&gt;用于为所有请求设置统一的prompt规则&lt;/li&gt;
+&lt;li&gt;合规&lt;/li&gt;
+&lt;li&gt;排除敏感信息&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;以上主要介绍了AI Gateway的一些特性&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;kong-gateway-operator带来的便利&#34;&gt;Kong Gateway Operator带来的便利&lt;/h3&gt;
+&lt;p&gt;全托管的Gateway&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过申明式配置，直接定义&lt;/li&gt;
+&lt;li&gt;创建gateway资源，自动管理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;kgo_config_1.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;figure&gt;&lt;img src=&#34;kgo_config_2.png&#34;/&gt;
+&lt;/figure&gt;
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过AIGateway进行第一类支持
+&lt;ul&gt;
+&lt;li&gt;直接申明所需配置，自动部署 Gateway 并配置相关 plugin&lt;/li&gt;
+&lt;li&gt;减少运维/维护成本&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;弹性伸缩&lt;/li&gt;
+&lt;li&gt;AIGateway的生命周期管理
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Kong/gateway-operator/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/Kong/gateway-operator/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;发展方向&#34;&gt;发展方向&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Kong Gateway Operator：通过 configRef 等机制，复用配置/屏蔽一些配置字段&lt;/li&gt;
+&lt;li&gt;AIGateway：基于 Token 的计费和限制&lt;/li&gt;
+&lt;li&gt;添加更多 LLM 的集成&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

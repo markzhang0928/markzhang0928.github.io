@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Katalyst-Core | zy.chat</title>
+    <link>https://zhangyi.chat/tags/katalyst-core/</link>
+      <atom:link href="https://zhangyi.chat/tags/katalyst-core/index.xml" rel="self" type="application/rss+xml" />
+    <description>Katalyst-Core</description>
+    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Sun, 19 May 2024 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png</url>
+      <title>Katalyst-Core</title>
+      <link>https://zhangyi.chat/tags/katalyst-core/</link>
+    </image>
+    
+    <item>
+      <title>KCD 2024 SHANGHAI - 01 Katalyst &amp; NRI</title>
+      <link>https://zhangyi.chat/post/kcd-2024-shanghai-01/</link>
+      <pubDate>Sun, 19 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://zhangyi.chat/post/kcd-2024-shanghai-01/</guid>
+      <description>&lt;h2 id=&#34;01---基于nri实现精细化且可拔插的容器资源管理---曹贺-任强&#34;&gt;01 - 基于NRI实现精细化且可拔插的容器资源管理 - 曹贺, 任强&lt;/h2&gt;
+&lt;h3 id=&#34;katalyst-简介&#34;&gt;Katalyst 简介&lt;/h3&gt;
+&lt;h4 id=&#34;kubernetes资源规划的挑战&#34;&gt;Kubernetes资源规划的挑战&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;在线业务的资源利用率呈现潮汐现象，夜间的资源利用率又非常低&lt;/li&gt;
+&lt;li&gt;用户倾向过度申请资源以保证服务的稳定性，造成资源浪费&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;&lt;img src=&#34;resource_provision.png&#34;
+         alt=&#34;resource_provision&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;resource_provision&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&#34;在离线混部&#34;&gt;在离线混部&lt;/h4&gt;
+&lt;p&gt;在线业务和离线作业对资源的使用模式天然是互补的:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在线业务重CPU和RPC时延&lt;/li&gt;
+&lt;li&gt;离线作业重内存和吞吐&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;&lt;img src=&#34;resource_provision_2.png&#34;
+         alt=&#34;resource_provision_2&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;resource_provision_2&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&#34;资源管理系统-katalyst&#34;&gt;资源管理系统 Katalyst&lt;/h4&gt;
+&lt;p&gt;旨在为运行Kubernetes之上的工作负载提供更加强劲的资源管理能力&lt;/p&gt;
+&lt;figure&gt;&lt;img src=&#34;katalyst.png&#34;
+         alt=&#34;katalyst&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;katalyst&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&#34;katalyst-插件化的资源管理机制&#34;&gt;Katalyst 插件化的资源管理机制&lt;/h3&gt;
+&lt;h4 id=&#34;精细化的资源管理策略&#34;&gt;精细化的资源管理策略&lt;/h4&gt;
+&lt;figure&gt;&lt;img src=&#34;qos_class.png&#34;
+         alt=&#34;qos_class&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;qos_class&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;ul&gt;
+&lt;li&gt;4种扩展的QoS级别：
+&lt;ul&gt;
+&lt;li&gt;表达了服务对资源质量的要求&lt;/li&gt;
+&lt;li&gt;以CPU为主导的维度来命名&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;更多QoS Enhancement
+&lt;ul&gt;
+&lt;li&gt;NUMA 绑定&lt;/li&gt;
+&lt;li&gt;NUMA 独占&lt;/li&gt;
+&lt;li&gt;流量分级&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;qrm框架-使kubelet的资源管理策略可扩展&#34;&gt;QRM框架: 使kubelet的资源管理策略可扩展&lt;/h4&gt;
+&lt;figure&gt;&lt;img src=&#34;qrm.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;ul&gt;
+&lt;li&gt;QoS Resource Manager
+&lt;ul&gt;
+&lt;li&gt;提供插件化的资源管理能力&lt;/li&gt;
+&lt;li&gt;与Topology Manager集成以实现NUMA亲和&lt;/li&gt;
+&lt;li&gt;在容器运行的过程中，动态调整其资源分配&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;QoS Resource Plugin
+&lt;ul&gt;
+&lt;li&gt;定制对容器的资源分配策略&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;参考了原生Device Manager的特性， Katalyst 侵入式地修改了Kubelet，实现了 QoS Resource Manger（QRM） 对 Kubelet 中自带的 CPU Manager 与 Memory Manager 进行了替换，
+以实现更细粒度的动态资源管理，并通过与 Topology Manager 集成实现了 NUMA 亲和的资源管理。&lt;/span&gt;
+&lt;/div&gt;
+&lt;h4 id=&#34;orm框架-将qrm框架从kubelet中解耦&#34;&gt;ORM框架: 将QRM框架从kubelet中解耦&lt;/h4&gt;
+&lt;figure&gt;&lt;img src=&#34;orm.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;ORM: &lt;a href=&#34;https://github.com/kubewharf/katalyst-core/issues/430&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Out-of-Band Resource Manager&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;两种模式
+&lt;ul&gt;
+&lt;li&gt;NRI 模式&lt;/li&gt;
+&lt;li&gt;旁路异步更新模式(Bypass 模式)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;支持NUMA亲和
+&lt;ul&gt;
+&lt;li&gt;带外的Topology Manager&lt;/li&gt;
+&lt;li&gt;带外的PodResourcesServer：
+&lt;ul&gt;
+&lt;li&gt;由于原生的PodResourceAPI不可用，Reporter Manger模块从带外的PodResourcesServer获取真实的资源信息，上传到KCNR供调度使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ol&gt;
+&lt;li&gt;Katalyst Agent 以NRI插件的方式在节点上作为独立的进程运行，在其中实现了 Out-of-Band Resource Manager，复用了先前 QRM 框架中的部分插件。&lt;/li&gt;
+&lt;li&gt;Containerd 调用 NRI 插件，并通过 NRI 与容器运行时通信，实现动态的容器资源管理的策略，与先前的实现机制相比具有更好的可扩展性与可插拔性。&lt;/li&gt;
+&lt;li&gt;对于不支持NRI的容器运行时，Katalyst Agent 提供了旁路 异步更新模式，对于containerd低版本，在启动容器后异步注入cgroup配置，实现资源管理策略。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;nri机制简介&#34;&gt;NRI机制简介&lt;/h3&gt;
+&lt;h4 id=&#34;kubernetes-qos资源管理目前社区的一些实现方式&#34;&gt;Kubernetes QoS资源管理目前社区的一些实现方式&lt;/h4&gt;
+&lt;figure&gt;&lt;img src=&#34;flow_chart.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&#34;nri节点细粒度资源管理利器&#34;&gt;NRI节点细粒度资源管理利器&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;NRI是一个CRI运行时插件扩展管理的通用框架，可以适用于Containerd，CRI-O等容器运行时&lt;/li&gt;
+&lt;li&gt;NRI为扩展插件提供了跟踪容器状态，并对其配置进行有限修改的基本机制。(资源配置、环境变量、annotation)&lt;/li&gt;
+&lt;li&gt;NRI插件是运行时无关的，可以适用于Containerd，CRI-O等容器运行时&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;&lt;img src=&#34;nri.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ul&gt;
+&lt;li&gt;a. 方案一 CRI proxy (Intel)：hook相应的容器/Pod事件，对原生组件有侵入性修改。&lt;/li&gt;
+&lt;li&gt;b. 方案二 Node Agent：异步更新，时效性不高。&lt;/li&gt;
+&lt;li&gt;c. 方案三 katalyst (Kubelet增强机制)：调用plugin agent，时效性高。但对上游kubelet侵入修改。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h4 id=&#34;nri插件运行机制&#34;&gt;NRI插件运行机制&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;以下两种运行方式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NRI插件作为一个独立的进程，通过NRI Socket与Runtime通信，可以部署为DaemonSet&lt;/li&gt;
+&lt;li&gt;NRI插件作为预编译的二进制文件，放置在指定路径下由Containerd发起调用(类似CNI，一次性加载) 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Hook事件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Pod Event: RunPodSandbox, StopPodSandbox, RemovePodSandbox&lt;/li&gt;
+&lt;li&gt;Container Events: CreateContainer, StartContainer, StopContainer, UpdateContainer, RemoveContainer, PostCreateContainer, PostStartContainer, PostUpdateContainer&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;主动发起&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;stub.UpdateContainer()&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;nri在katalyst中的应用&#34;&gt;NRI在Katalyst中的应用&lt;/h3&gt;
+&lt;h4 id=&#34;nri-enhanced-orm-in-katalyst&#34;&gt;NRI Enhanced ORM in KataLyst&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Katalyst Agent作为一个NRI插件，从Containerd获取Pod/Container事件
+&lt;ul&gt;
+&lt;li&gt;RunPodSandbox，CreateContainer，RemovePodSandbox&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;旁路模式与NRI并存，适配低版本的Containerd环境&lt;/li&gt;
+&lt;li&gt;复用QRM插件机制，降低迁移成本&lt;/li&gt;
+&lt;li&gt;Reconcile机制通过NRI UpdateContainer() 更新容器资源&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;&lt;img src=&#34;nri_orm.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&#34;社区建设&#34;&gt;社区建设&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Github仓库：
+&lt;a href=&#34;https://github.com/kubewharf/katalyst-core&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;kubewharf/katalyst-core&lt;/a&gt;
+&lt;a href=&#34;https://github.com/containerd/nri&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;containerd/nri&lt;/a&gt;
+&lt;a href=&#34;https://github.com/containers/nri-plugins&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;containers/nri-plugins&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;相关 KubeCon 演讲：&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kccncna2023.sched.com/event/1R2nL&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Advancing Memory Management in Kubernetes: Next Steps with Memory QoS - Dixita Narang, Google &amp;amp; Antti Kervinen, Intel, KubeCon NA 2023&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kccncosschn2023.sched.com/event/1PTH5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;使用可插拔和可定制的智能运行时提升工作负载的QoS | Enhance Workload QoS with Pluggable and Customizable Smarter Runtimes - Rougang Han, Alibaba &amp;amp; Kang Zhang, Intel&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kccncna2022.sched.com/event/182JT&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;NRI: Extending Containerd And CRI-O With Common Plugins - Krisztian Litkey, Intel &amp;amp; Mike Brown, IBM, KubeCon NA 2022&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kccnceu2021.sched.com/event/iE1Y&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Maximizing Workload’s Performance With Smarter Runtimes - Krisztian Litkey &amp;amp; Alexander Kanevskiy, Intel, KubeCon EU 2021&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

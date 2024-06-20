@@ -1,0 +1,990 @@
+<!doctype html>
+<!-- This site was created with Hugo Blox. https://hugoblox.com -->
+<!-- Last Published: June 20, 2024 --><html lang="en-us" dir="ltr"
+      data-wc-theme-default="system">
+  
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="generator" content="Hugo Blox Builder 0.1.0" />
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="张怡" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="两位演讲者分别是来自字节跳动的曹贺与来自 Intel 的任强，他们分别介绍了字节跳动开源的 Katalyst 以及其插件化的资源管理机制、CRI 扩展框架 NRI 以及 Katalyst 基于 NRI 的优化。" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://zhangyi.chat/post/kcd-2024-shanghai-01/" />
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/themes/blue.min.css" />
+  
+
+  
+  
+    
+    <link href="/dist/wc.min.css" rel="stylesheet" />
+  
+
+  <script>
+     
+    window.hbb = {
+       defaultTheme: document.documentElement.dataset.wcThemeDefault,
+       setDarkTheme: () => {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      },
+       setLightTheme: () => {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    }
+
+    console.debug(`Default Hugo Blox Builder theme is ${window.hbb.defaultTheme}`);
+
+    if ("wc-color-theme" in localStorage) {
+      localStorage.getItem("wc-color-theme") === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+    } else {
+      window.hbb.defaultTheme === "dark" ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      if (window.hbb.defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? window.hbb.setDarkTheme() : window.hbb.setLightTheme();
+      }
+    }
+  </script>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      let checkboxes = document.querySelectorAll('li input[type=\'checkbox\'][disabled]');
+      checkboxes.forEach(e => {
+        e.parentElement.parentElement.classList.add('task-list');
+      });
+
+      
+      const liNodes = document.querySelectorAll('.task-list li');
+      liNodes.forEach(nodes => {
+        let textNodes = Array.from(nodes.childNodes).filter(node => node.nodeType === 3 && node.textContent.trim().length > 1);
+        if (textNodes.length > 0) {
+          const span = document.createElement('label');
+          textNodes[0].after(span);  
+          span.appendChild(nodes.querySelector('input[type=\'checkbox\']'));
+          span.appendChild(textNodes[0]);
+        }
+      });
+    });
+  </script>
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/libs/chroma/github-light.min.css" title="hl-light" media="print" onload="this.media='all'" disabled>
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css" title="hl-dark" media="print" onload="this.media='all'" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+  <link rel="icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://zhangyi.chat/post/kcd-2024-shanghai-01/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary" />
+  
+    <meta property="twitter:site" content="@GetResearchDev" />
+    <meta property="twitter:creator" content="@GetResearchDev" />
+  
+  <meta property="og:site_name" content="zy.chat" />
+  <meta property="og:url" content="https://zhangyi.chat/post/kcd-2024-shanghai-01/" />
+  <meta property="og:title" content="KCD 2024 SHANGHAI - 01 Katalyst &amp; NRI | zy.chat" />
+  <meta property="og:description" content="两位演讲者分别是来自字节跳动的曹贺与来自 Intel 的任强，他们分别介绍了字节跳动开源的 Katalyst 以及其插件化的资源管理机制、CRI 扩展框架 NRI 以及 Katalyst 基于 NRI 的优化。" /><meta property="og:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-05-19T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-05-19T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhangyi.chat/post/kcd-2024-shanghai-01/"
+  },
+  "headline": "KCD 2024 SHANGHAI - 01 Katalyst \u0026 NRI",
+  
+  "datePublished": "2024-05-19T00:00:00Z",
+  "dateModified": "2024-05-19T00:00:00Z",
+  
+  "author": {
+    "@type": "Person",
+    "name": "张怡"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "zy.chat",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "两位演讲者分别是来自字节跳动的曹贺与来自 Intel 的任强，他们分别介绍了字节跳动开源的 Katalyst 以及其插件化的资源管理机制、CRI 扩展框架 NRI 以及 Katalyst 基于 NRI 的优化。"
+}
+</script>
+
+  
+
+  
+
+
+  <title>KCD 2024 SHANGHAI - 01 Katalyst &amp; NRI | zy.chat</title>
+
+  
+  
+  
+  
+  <style>
+    @font-face {
+      font-family: 'Inter var';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url(/dist/font/Inter.var.woff2) format("woff2");
+    }
+  </style>
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  <script
+    defer
+    src="/js/wowchemy-en.min.2e047bbef51da430c7057e297e2273eacfb1edab713a32f700a61ce4e84b676e.js"
+    integrity="sha256-LgR7vvUdpDDHBX4pfiJz6s&#43;x7atxOjL3AKYc5OhLZ24="
+  ></script>
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+  <body class="dark:bg-gray-800 dark:text-white-800 page-wrapper">
+    <div id="page-bg"></div>
+    <div class="page-header">
+      
+      
+      
+        
+        
+        
+          
+
+
+
+
+
+<nav
+  class="relative flex w-full flex-nowrap items-center justify-between bg-white py-2 text-neutral-500 shadow-lg hover:text-neutral-700 focus:text-neutral-700 dark:bg-slate-900 lg:flex-wrap lg:justify-start lg:py-4"
+  data-te-navbar-ref>
+  <div class="flex w-full flex-wrap items-center justify-between px-3">
+    
+    <button
+      class="block border-0 bg-transparent px-2 text-neutral-500 hover:no-underline hover:shadow-none focus:no-underline focus:shadow-none focus:outline-none focus:ring-0 dark:text-neutral-200 lg:hidden"
+      type="button"
+      data-te-collapse-init
+      data-te-target="#collapse-main-navbar"
+      aria-controls="collapse-main-navbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation" onclick="toggleNavbar('collapse-main-navbar')">
+      
+      <span class="[&>svg]:w-7">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="h-7 w-7">
+          <path
+            fill-rule="evenodd"
+            d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    
+    <div
+      class="!visible mt-2 hidden flex-grow basis-[100%] items-center justify-center lg:mt-0 lg:!flex lg:basis-auto"
+      id="collapse-main-navbar"
+      data-te-collapse-item>
+      
+      <ul
+        class="list-style-none flex flex-col pl-0 lg:mt-1 lg:flex-row items-center"
+        data-te-navbar-nav-ref>
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/"
+            data-te-nav-link-ref
+          >Bio</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/post/"
+            data-te-nav-link-ref
+          >Blog</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/experience/"
+            data-te-nav-link-ref
+          >Experience</a
+          >
+        </li>
+        
+        <li
+          class="my-4 pl-2 lg:my-0 lg:pl-2 lg:pr-1"
+          data-te-nav-item-ref>
+          <a
+            class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white "
+            aria-current="page"
+            href="/projects/"
+            data-te-nav-link-ref
+          >Projects</a
+          >
+        </li>
+        
+        
+        
+        
+        <li class="lg:px-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200
+            [&.active]:font-bold [&.active]:text-black/90 dark:[&.active]:text-white">
+          <button class="theme-toggle mt-1" accesskey="t" title="">
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class="dark:hidden">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" class=" dark:block [&:not(dark)]:hidden">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  function toggleNavbar(collapseID){
+    document.getElementById(collapseID).classList.toggle("hidden");
+    document.getElementById(collapseID).classList.toggle("flex");
+  }
+</script>
+
+        
+      
+    </div>
+    <div class="page-body  my-10">
+      
+<div class="flex flex-col justify-center">
+  <article class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert">
+    
+    
+    
+
+    <h1 class="lg:text-6xl">KCD 2024 SHANGHAI - 01 Katalyst &amp; NRI</h1>
+
+    
+    
+    
+
+    <h2 id="01---基于nri实现精细化且可拔插的容器资源管理---曹贺-任强">01 - 基于NRI实现精细化且可拔插的容器资源管理 - 曹贺, 任强</h2>
+<h3 id="katalyst-简介">Katalyst 简介</h3>
+<h4 id="kubernetes资源规划的挑战">Kubernetes资源规划的挑战</h4>
+<ul>
+<li>在线业务的资源利用率呈现潮汐现象，夜间的资源利用率又非常低</li>
+<li>用户倾向过度申请资源以保证服务的稳定性，造成资源浪费</li>
+</ul>
+<figure><img src="resource_provision.png"
+         alt="resource_provision"/><figcaption>
+            <p>resource_provision</p>
+        </figcaption>
+</figure>
+
+<h4 id="在离线混部">在离线混部</h4>
+<p>在线业务和离线作业对资源的使用模式天然是互补的:</p>
+<ul>
+<li>在线业务重CPU和RPC时延</li>
+<li>离线作业重内存和吞吐</li>
+</ul>
+<figure><img src="resource_provision_2.png"
+         alt="resource_provision_2"/><figcaption>
+            <p>resource_provision_2</p>
+        </figcaption>
+</figure>
+
+<h4 id="资源管理系统-katalyst">资源管理系统 Katalyst</h4>
+<p>旨在为运行Kubernetes之上的工作负载提供更加强劲的资源管理能力</p>
+<figure><img src="katalyst.png"
+         alt="katalyst"/><figcaption>
+            <p>katalyst</p>
+        </figcaption>
+</figure>
+
+<h3 id="katalyst-插件化的资源管理机制">Katalyst 插件化的资源管理机制</h3>
+<h4 id="精细化的资源管理策略">精细化的资源管理策略</h4>
+<figure><img src="qos_class.png"
+         alt="qos_class"/><figcaption>
+            <p>qos_class</p>
+        </figcaption>
+</figure>
+
+<ul>
+<li>4种扩展的QoS级别：
+<ul>
+<li>表达了服务对资源质量的要求</li>
+<li>以CPU为主导的维度来命名</li>
+</ul>
+</li>
+<li>更多QoS Enhancement
+<ul>
+<li>NUMA 绑定</li>
+<li>NUMA 独占</li>
+<li>流量分级</li>
+<li>&hellip;</li>
+</ul>
+</li>
+</ul>
+<h4 id="qrm框架-使kubelet的资源管理策略可扩展">QRM框架: 使kubelet的资源管理策略可扩展</h4>
+<figure><img src="qrm.png"/>
+</figure>
+
+<ul>
+<li>QoS Resource Manager
+<ul>
+<li>提供插件化的资源管理能力</li>
+<li>与Topology Manager集成以实现NUMA亲和</li>
+<li>在容器运行的过程中，动态调整其资源分配</li>
+</ul>
+</li>
+<li>QoS Resource Plugin
+<ul>
+<li>定制对容器的资源分配策略</li>
+</ul>
+</li>
+</ul>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300">参考了原生Device Manager的特性， Katalyst 侵入式地修改了Kubelet，实现了 QoS Resource Manger（QRM） 对 Kubelet 中自带的 CPU Manager 与 Memory Manager 进行了替换，
+以实现更细粒度的动态资源管理，并通过与 Topology Manager 集成实现了 NUMA 亲和的资源管理。</span>
+</div>
+<h4 id="orm框架-将qrm框架从kubelet中解耦">ORM框架: 将QRM框架从kubelet中解耦</h4>
+<figure><img src="orm.png"/>
+</figure>
+
+<p>ORM: <a href="https://github.com/kubewharf/katalyst-core/issues/430" target="_blank" rel="noopener">Out-of-Band Resource Manager</a></p>
+<ul>
+<li>两种模式
+<ul>
+<li>NRI 模式</li>
+<li>旁路异步更新模式(Bypass 模式)</li>
+</ul>
+</li>
+<li>支持NUMA亲和
+<ul>
+<li>带外的Topology Manager</li>
+<li>带外的PodResourcesServer：
+<ul>
+<li>由于原生的PodResourceAPI不可用，Reporter Manger模块从带外的PodResourcesServer获取真实的资源信息，上传到KCNR供调度使用。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300"><ol>
+<li>Katalyst Agent 以NRI插件的方式在节点上作为独立的进程运行，在其中实现了 Out-of-Band Resource Manager，复用了先前 QRM 框架中的部分插件。</li>
+<li>Containerd 调用 NRI 插件，并通过 NRI 与容器运行时通信，实现动态的容器资源管理的策略，与先前的实现机制相比具有更好的可扩展性与可插拔性。</li>
+<li>对于不支持NRI的容器运行时，Katalyst Agent 提供了旁路 异步更新模式，对于containerd低版本，在启动容器后异步注入cgroup配置，实现资源管理策略。</li>
+</ol>
+</span>
+</div>
+<h3 id="nri机制简介">NRI机制简介</h3>
+<h4 id="kubernetes-qos资源管理目前社区的一些实现方式">Kubernetes QoS资源管理目前社区的一些实现方式</h4>
+<figure><img src="flow_chart.png"/>
+</figure>
+
+<h4 id="nri节点细粒度资源管理利器">NRI节点细粒度资源管理利器</h4>
+<ul>
+<li>NRI是一个CRI运行时插件扩展管理的通用框架，可以适用于Containerd，CRI-O等容器运行时</li>
+<li>NRI为扩展插件提供了跟踪容器状态，并对其配置进行有限修改的基本机制。(资源配置、环境变量、annotation)</li>
+<li>NRI插件是运行时无关的，可以适用于Containerd，CRI-O等容器运行时</li>
+</ul>
+<figure><img src="nri.png"/>
+</figure>
+
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 pt-1 text-primary-400">
+  <svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z"/></svg>
+</span>
+  <span class="dark:text-neutral-300"><ul>
+<li>a. 方案一 CRI proxy (Intel)：hook相应的容器/Pod事件，对原生组件有侵入性修改。</li>
+<li>b. 方案二 Node Agent：异步更新，时效性不高。</li>
+<li>c. 方案三 katalyst (Kubelet增强机制)：调用plugin agent，时效性高。但对上游kubelet侵入修改。</li>
+</ul>
+</span>
+</div>
+<h4 id="nri插件运行机制">NRI插件运行机制</h4>
+<ul>
+<li>
+<p>以下两种运行方式:</p>
+<ul>
+<li>NRI插件作为一个独立的进程，通过NRI Socket与Runtime通信，可以部署为DaemonSet</li>
+<li>NRI插件作为预编译的二进制文件，放置在指定路径下由Containerd发起调用(类似CNI，一次性加载) 。</li>
+</ul>
+</li>
+<li>
+<p>Hook事件</p>
+<ul>
+<li>Pod Event: RunPodSandbox, StopPodSandbox, RemovePodSandbox</li>
+<li>Container Events: CreateContainer, StartContainer, StopContainer, UpdateContainer, RemoveContainer, PostCreateContainer, PostStartContainer, PostUpdateContainer</li>
+</ul>
+</li>
+<li>
+<p>主动发起</p>
+<ul>
+<li>stub.UpdateContainer()</li>
+</ul>
+</li>
+</ul>
+<h3 id="nri在katalyst中的应用">NRI在Katalyst中的应用</h3>
+<h4 id="nri-enhanced-orm-in-katalyst">NRI Enhanced ORM in KataLyst</h4>
+<ul>
+<li>Katalyst Agent作为一个NRI插件，从Containerd获取Pod/Container事件
+<ul>
+<li>RunPodSandbox，CreateContainer，RemovePodSandbox</li>
+</ul>
+</li>
+<li>旁路模式与NRI并存，适配低版本的Containerd环境</li>
+<li>复用QRM插件机制，降低迁移成本</li>
+<li>Reconcile机制通过NRI UpdateContainer() 更新容器资源</li>
+</ul>
+<figure><img src="nri_orm.png"/>
+</figure>
+
+<h3 id="社区建设">社区建设</h3>
+<ul>
+<li>
+<p>Github仓库：
+<a href="https://github.com/kubewharf/katalyst-core" target="_blank" rel="noopener">kubewharf/katalyst-core</a>
+<a href="https://github.com/containerd/nri" target="_blank" rel="noopener">containerd/nri</a>
+<a href="https://github.com/containers/nri-plugins" target="_blank" rel="noopener">containers/nri-plugins</a></p>
+</li>
+<li>
+<p>相关 KubeCon 演讲：</p>
+</li>
+<li>
+<p><a href="https://kccncna2023.sched.com/event/1R2nL" target="_blank" rel="noopener">Advancing Memory Management in Kubernetes: Next Steps with Memory QoS - Dixita Narang, Google &amp; Antti Kervinen, Intel, KubeCon NA 2023</a></p>
+</li>
+<li>
+<p><a href="https://kccncosschn2023.sched.com/event/1PTH5" target="_blank" rel="noopener">使用可插拔和可定制的智能运行时提升工作负载的QoS | Enhance Workload QoS with Pluggable and Customizable Smarter Runtimes - Rougang Han, Alibaba &amp; Kang Zhang, Intel</a></p>
+</li>
+<li>
+<p><a href="https://kccncna2022.sched.com/event/182JT" target="_blank" rel="noopener">NRI: Extending Containerd And CRI-O With Common Plugins - Krisztian Litkey, Intel &amp; Mike Brown, IBM, KubeCon NA 2022</a></p>
+</li>
+<li>
+<p><a href="https://kccnceu2021.sched.com/event/iE1Y" target="_blank" rel="noopener">Maximizing Workload’s Performance With Smarter Runtimes - Krisztian Litkey &amp; Alexander Kanevskiy, Intel, KubeCon EU 2021</a></p>
+</li>
+</ul>
+
+  </article>
+
+<div class="container mx-auto prose prose-slate lg:prose-xl dark:prose-invert mt-5">
+  <div class="max-w-prose print:hidden">
+  
+
+
+
+  
+
+<div class="flex justify-center">
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/katalyst-core/">Katalyst-Core</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/bytedance/">Bytedance</a>
+  
+  <a class="no-underline bg-primary-100 text-primary-800 text-xs font-medium mr-2 px-2.5 py-0.5 lg:px-5 lg:py-2 rounded dark:bg-primary-900 dark:text-primary-300" href="/tags/kubernetes/">Kubernetes</a>
+  
+</div>
+
+
+  
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+
+<div class="flex">
+  
+  
+  <img
+    class="mr-4 h-24 w-24 rounded-full"
+    width="96"
+    height="96"
+    alt="张怡"
+  src="/author/%E5%BC%A0%E6%80%A1/avatar_hud4b4d875cce5e0778ef5b9cd48471f21_880315_192x192_fill_q80_lanczos_center.jpg"
+  loading="lazy"
+  />
+  
+  <div class="place-self-center">
+    <div class="text-[0.6rem] uppercase leading-3 text-neutral-500 dark:text-neutral-400">
+      Authors
+    </div>
+    <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+      <a href="https://zhangyi.chat/" class="no-underline">
+      张怡
+      </a>
+    </div>
+
+    
+    <div class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+    .
+    </div>
+    
+
+
+    
+
+    <div class="text-2xl sm:text-lg pt-1">
+
+      
+<div class="flex flex-wrap text-neutral-500 dark:text-neutral-300">
+  
+    
+    
+    
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="mailto:zhangyiscut@gmail.com"
+      
+      aria-label="At-Symbol"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 1 0-8 0a4 4 0 0 0 8 0Zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-9 9m4.5-1.206a8.959 8.959 0 0 1-4.5 1.207"/></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://github.com/markzhang0928"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Github"
+    ><svg style="height: 1em;" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg></a>
+  
+    
+    
+    
+    
+      
+    
+    <a
+      class="pr-2 transition-transform hover:scale-125 hover:text-primary-700 dark:hover:text-primary-400"
+      style="will-change:transform;"
+      href="https://www.linkedin.com/"
+      target="_blank" rel="noopener" rel="me noopener noreferrer"
+      aria-label="Brands/Linkedin"
+    ><svg style="height: 1em;" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg></a>
+  
+</div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+
+
+
+
+  
+  
+    
+    
+    
+<div class="pt-1">
+  <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+  <div class="flex justify-between pt-2">
+    <span>
+      
+        <a class="group flex no-underline" href="/post/kcd-2024-shanghai-05/">
+          <span
+            class="me-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline rtl:hidden">&larr;</span></span>
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >KCD 2024 SHANGHAI - 05 Godel Scheduler</span>
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                Apr 25, 2024
+              
+            </span>
+          </span>
+        </a>
+      
+    </span>
+    <span>
+      
+        <a class="group flex text-right no-underline" href="/post/client-go-source-code-walkthrough/">
+          <span class="flex flex-col">
+            <span
+              class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+            >Client-go源码走读</span
+            >
+            <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+              
+                May 19, 2024
+              
+            </span>
+          </span>
+          <span
+            class="ms-2 text-neutral-700 transition-transform group-hover:-translate-x-[2px] group-hover:text-primary-600 dark:text-neutral dark:group-hover:text-primary-400"
+          ><span class="ltr:inline">&rarr;</span></span>
+        </a>
+      
+    </span>
+  </div>
+</div>
+
+
+
+  
+  
+
+
+
+</div>
+
+</div>
+
+</div>
+
+    </div>
+    <div class="page-footer">
+      <footer class="container mx-auto flex flex-col justify-items-center text-sm leading-6 mt-12 mb-4 text-slate-700 dark:text-slate-200">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+    
+  
+
+  
+
+  
+  <p class="powered-by text-center">
+    © 2024 Me. This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank">CC BY NC ND 4.0</a>
+  </p>
+  
+
+  <p class="powered-by footer-license-icons">
+    <a href="https://creativecommons.org/licenses/by-nc-nd/4.0" rel="noopener noreferrer" target="_blank" aria-label="Creative Commons">
+      <i class="fab fa-creative-commons fa-2x" aria-hidden="true"></i>
+      <i class="fab fa-creative-commons-by fa-2x" aria-hidden="true"></i>
+      
+        <i class="fab fa-creative-commons-nc fa-2x" aria-hidden="true"></i>
+      
+      
+        <i class="fab fa-creative-commons-nd fa-2x" aria-hidden="true"></i>
+      
+    </a>
+  </p>
+
+
+
+
+
+  <p class="powered-by text-center">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://hugoblox.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Hugo Blox Builder</a> — the free, <a href="https://github.com/HugoBlox/hugo-blox-builder" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+
+</footer>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

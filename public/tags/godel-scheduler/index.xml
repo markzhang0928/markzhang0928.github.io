@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Godel Scheduler | zy.chat</title>
+    <link>https://zhangyi.chat/tags/godel-scheduler/</link>
+      <atom:link href="https://zhangyi.chat/tags/godel-scheduler/index.xml" rel="self" type="application/rss+xml" />
+    <description>Godel Scheduler</description>
+    <generator>Hugo Blox Builder (https://hugoblox.com)</generator><language>en-us</language><lastBuildDate>Thu, 25 Apr 2024 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://zhangyi.chat/media/icon_hu68170e94a17a2a43d6dcb45cf0e8e589_3079_512x512_fill_lanczos_center_3.png</url>
+      <title>Godel Scheduler</title>
+      <link>https://zhangyi.chat/tags/godel-scheduler/</link>
+    </image>
+    
+    <item>
+      <title>KCD 2024 SHANGHAI - 05 Godel Scheduler</title>
+      <link>https://zhangyi.chat/post/kcd-2024-shanghai-05/</link>
+      <pubDate>Thu, 25 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://zhangyi.chat/post/kcd-2024-shanghai-05/</guid>
+      <description>&lt;h2 id=&#34;05---godel-scheduler字节开源内部超大规模在离线统一调度器---任玉泉字节跳动&#34;&gt;05 - Godel Scheduler：字节开源内部超大规模在离线统一调度器 - 任玉泉，字节跳动&lt;/h2&gt;
+&lt;p&gt;演讲者为来自字节跳动的任玉泉，他向我们介绍了字节跳动内部基于 Kubernetes 的大规模在离线统一调度系统Godel Scheduler的研发背景、
+详细设计、内部实践以及后续开源的一系列规划。&lt;/p&gt;
+&lt;h2 id=&#34;part-01-研发背景&#34;&gt;Part 01: 研发背景&lt;/h2&gt;
+&lt;p&gt;业务需要：解决离线两套系统混部导致的资源成本和效率问题。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;成本：
+&lt;ul&gt;
+&lt;li&gt;资源成本：低利用率、高适配成本。&lt;/li&gt;
+&lt;li&gt;开发成本：重复工作多、适配成本高。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;效率：
+&lt;ul&gt;
+&lt;li&gt;资源流转效率低&lt;/li&gt;
+&lt;li&gt;功能迭代效率低&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;运维：
+&lt;ul&gt;
+&lt;li&gt;压力大&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;开源产品不满足需求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;part-02-详细设计&#34;&gt;Part 02: 详细设计&lt;/h2&gt;
+&lt;h3 id=&#34;godel-scheduler整体架构利用乐观并发两层框架统一调度&#34;&gt;Godel Scheduler整体架构：利用乐观并发、两层框架、统一调度。&lt;/h3&gt;
+&lt;figure&gt;&lt;img src=&#34;godel_scheduler.png&#34;
+         alt=&#34;godel_scheduler整体架构&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;godel_scheduler整体架构&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;主要特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;乐观并发：把最耗时的操作抽出来，并发执行，提升吞吐天花板。&lt;/li&gt;
+&lt;li&gt;两层框架：增强扩展性（“批”调度能力）的同时，进一步提升性能。&lt;/li&gt;
+&lt;li&gt;统一调度：在线任务，离线任务，一个调度器。&lt;/li&gt;
+&lt;li&gt;基于K8S系统：完全兼容K8S生态。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ol&gt;
+&lt;li&gt;k8s scheduler调度器调度性能的上限在1k pods/s。在性能方面，原生 Kubernetes 默认调度器在 5000 个节点的集群中只能实现每秒 10个Pod 左右的调度吞吐量。&lt;/li&gt;
+&lt;li&gt;pod跟Node匹配在调度器中较为复杂。把这部分单独拆出来，单独成为组件scheduler，可以水平扩展。pod调度到节点和 抢占框架，Scheduler Framework有多个阶段，每个阶段都是pluggabled。
+调度多组件横向扩展，会存在并发冲突的问题, 冲突的解决在binder这里收敛。&lt;/li&gt;
+&lt;li&gt;dispatcher和 binder之所以是单组件，设计之初承接量是比较小的，可以保证吞吐相对符合要求。dispatcher需要为pod选择合适的scheduler进行调度决策。&lt;/li&gt;
+&lt;li&gt;scheduler分两层调度，unit scheduling和 pod scheduling。  &lt;mark&gt; 每个scheduler都有自己的全局view &lt;/mark&gt;
+比如：离线业务 pod group gang语义的pod、ML训练任务job级别的语义、比如：训练池里的pod都在一个网段/交换机/机型。&lt;/li&gt;
+&lt;li&gt;把Pod的状态分成三部分，dispatcher获取到pending状态的pods,&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;dispatcher应用排队分发节点分区&#34;&gt;Dispatcher：应用排队、分发、节点分区。&lt;/h3&gt;
+&lt;p&gt;Dispatcher的作用是为不同的pod找到合适scheduler进行调度。
+&lt;figure&gt;&lt;img src=&#34;dispatcher.png&#34;
+         alt=&#34;详细设计dispatcher&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;详细设计dispatcher&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;/p&gt;
+&lt;p&gt;它主要由几个部分构成：Sorting Policy Manager, Dispatching Policy Manager, Node Shuffler, Scheduler Maintainer 和Reconciler。其中，&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Sort Policy Manager: 主要负责对应用进行排队，现在实现了如下排队策略， 如：FIFO，DRF/FairShare（没上生产环境）。后面会添加更多排队策略，如：priority value based等&lt;/li&gt;
+&lt;li&gt;Dispatching Policy Manager: 主要负责分发应用到不同的Scheduler实例，现阶段是默认策略：LoadBalance（根据scheduler的负载，去平衡负责）， 后面会增强该功能，做成插件化配置模式；比如：gang pod group需要保证里面的pod都分配到一个scheduler。&lt;/li&gt;
+&lt;li&gt;Node Shuffler：主要负责基于Scheduler实例个数，对集群节点进行Partition分组，每个节点在一个Partition里面，每个Scheduler实例对应一个Partition，
+Scheduler调度的时候会优先选择自己Partition节点，没有合适的情况下，才会去其他Partition节点。
+如果Node增删或者Scheduler个数变化，会基于实际情况重新分配节点；Partition规则现在是基于Scheduler个数平均分配，后面会增强，Partition策略可配置;&lt;/li&gt;
+&lt;li&gt;Scheduler Maintainer：主要负责对Scheduler实例状态进行维护，包括Scheduler实例健康状况，负载情况，Partition节点数等；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ol&gt;
+&lt;li&gt;SortedQueue目前是一个FIFO队列，后续会抽象成Sorting PolicyManager。使用一个goroutine循环pop queue中的数据，分发到不同的scheduler。&lt;/li&gt;
+&lt;li&gt;Store缓存了调度器信息， 后续会在主流程上游添加sorting policy和dispatching policy，抽象成对应的Manager。&lt;/li&gt;
+&lt;li&gt;目前scheduler maintainer和 store中都保存scheduler信息，后续会去掉store这部分，直接使用scheduler maintainer中的信息。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/span&gt;
+&lt;/div&gt; 
+&lt;h3 id=&#34;scheduler具体调度和抢占决策&#34;&gt;Scheduler：具体调度和抢占决策&lt;/h3&gt;
+&lt;p&gt;Scheduler 主要负责为应用做出具体的 调度和抢占决策，但是不真正执行（执行者是 binder）。
+&lt;figure&gt;&lt;img src=&#34;scheduler.png&#34;
+         alt=&#34;详细设计scheduler&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;详细设计scheduler&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;/p&gt;
+&lt;p&gt;由两级框架组成： Unit scheduling framework 和 Pod scheduling framework。整个调度过程主要分为
+3 大部分：Node Organizing， Unit Scheduling 和 Unit Preempting。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Node Organizing： 过滤节点减少后续流程计算量，以及为节点进行排序。主要有两类插件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Locating plugins： 基于应用，过滤掉不符合要求节点，比如： Local PV，DaemonSet Pods，Resource Reservation， Rescheduling 等，共同点是： 可以基于应用信息，过滤掉大部分节点，减少后面流程计算量，提升调度吞吐；&lt;/li&gt;
+&lt;li&gt;Node Grouping plugins： 为通过 Locating plugins 的节点进行分组，比如： 节点节点剩余资源量进行分组，或者基于 Job level affinity 里面的拓扑信息进行节点分组等，为的是能更快调度上或者获得更好的调度质量。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Unit Scheduling：基于应用请求，对通过 Node Organizing plugins 的节点进行匹配筛选和打分，
+类似 k8s Scheduler framework，Unit scheduling 阶段也有两类插件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Filtering plugins：基于应用请求，过滤掉不符合要求的节点；&lt;/li&gt;
+&lt;li&gt;Scoring plugins：对上面筛选出来的节点进行打分，选出最合适的节点；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Unit Preempting：上面阶段无法调度，则会进入&lt;strong&gt;抢占阶段&lt;/strong&gt;，尝试为待调度应用去抢占正在运行的应用实例。该阶段也有两类插件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Victim Searching： 遍历集群节点，尝试搜索 victims （被抢占应用），看是否能找到节点和 victims；&lt;/li&gt;
+&lt;li&gt;Candidates Sorting：如果上面步骤找到了合适的节点和 victims，则会为这些 victims 进行排序（节点粒度），选出最合适的节点和 victims；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ol&gt;
+&lt;li&gt;存在Node Organizing的原因是，加快node的匹配过程。诸如:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;daemonset pod通过node affinity去进行节点的过滤，但仍然需要遍历所有Node节点。&lt;/li&gt;
+&lt;li&gt;将vk场景的node匹配操作前置，加快node的匹配过程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;通常情况会把一个集群划作一个Node Group，还有一些其他的划分像 同一个网段下的Node也划分一个Node Group。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;binder冲突检查抢占操作应用绑定&#34;&gt;Binder：冲突检查、抢占操作、应用绑定&lt;/h3&gt;
+&lt;figure&gt;&lt;img src=&#34;binder.png&#34;
+         alt=&#34;详细设计binder&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;详细设计binder&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;Binder 主要负责乐观冲突检查，执行具体的抢占操作（删除 victims），进行应用绑定前的准备工作，比如动态创建存储卷等，以及最终执行绑定操作。
+Binder 主要有 ConflictResolver, PreemptionExecutor 和 UnitBinder 三部分组成。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ConflictResolver: 主要负责并发冲突检查，一旦发现冲突，立即打回，重新调度；&lt;/li&gt;
+&lt;li&gt;冲突检查分为两类：Cross node conflict resolver 和 Single node conflict resolver。
+&lt;ul&gt;
+&lt;li&gt;Cross node conflict resolver: 负责检查跨节点冲突，比如： 某个拓扑域调度限制是否仍然能满足等，
+由于该节点跨节点，Binder 必须串行执行；&lt;/li&gt;
+&lt;li&gt;Single node conflict resolver: 单节点内冲突检查，比如： 节点资源是否仍然足够等，该节点检查的逻
+辑限制在节点内部，所以不同节点的检查可以并发执行（unit 内 pods 调度到不同节点）；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;PreemptionExecutorperator: 如果没有冲突，同时应用需要抢占，则执行抢占操作，删除 victims，等待最终调度；
+&lt;ul&gt;
+&lt;li&gt;UnitBinder: 主要负责绑定前准备工作，比如：创建 volume 等，以及执行真正的绑定操作。
+现在的版本，Binder 里面还耦合了一个 PodGroup controller 实现，负责维护 PodGroup 的状态以及生命周期，
+后面会从 Binder 里面移除，独立成一个 Controller。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900&#34;&gt;
+&lt;span class=&#34;pr-3 pt-1 text-primary-400&#34;&gt;
+  &lt;svg height=&#34;24&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; viewBox=&#34;0 0 24 24&#34;&gt;&lt;path fill=&#34;none&#34; stroke=&#34;currentColor&#34; stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; stroke-width=&#34;2&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z&#34;/&gt;&lt;/svg&gt;
+&lt;/span&gt;
+  &lt;span class=&#34;dark:text-neutral-300&#34;&gt;&lt;ol&gt;
+&lt;li&gt;CrossNode的冲突检查，需要串行执行。&lt;/li&gt;
+&lt;li&gt;每一步的操作失败后，会打回，重新调度。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;part-03-内部实践&#34;&gt;Part 03: 内部实践&lt;/h2&gt;
+&lt;figure&gt;&lt;img src=&#34;services.png&#34;
+         alt=&#34;支撑的业务&#34;/&gt;&lt;figcaption&gt;
+            &lt;p&gt;支撑的业务&lt;/p&gt;
+        &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;ul&gt;
+&lt;li&gt;支撑的业务：微服务、有状态服务、大数据、机器学习等。&lt;/li&gt;
+&lt;li&gt;单集群规模：2w节点、100w Pod。&lt;/li&gt;
+&lt;li&gt;性能：单Scheduler实例高峰调度吞吐2k+ pods/s，多(3)实例4k+ pods/s。（实例数越多，冲突会更多，吞吐可能会下降。）&lt;/li&gt;
+&lt;li&gt;在离线资源流转达到从周级别到分钟级别的优化。&lt;/li&gt;
+&lt;li&gt;资源利用率
+&lt;ul&gt;
+&lt;li&gt;CPU利用率微服务常态60%+, 推广周40%左右(需要微拓扑绑定NUMA,无法shareCPU)。&lt;/li&gt;
+&lt;li&gt;7W张GPU卡，利用率95%以上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;part-04-未来工作&#34;&gt;Part 04: 未来工作&lt;/h2&gt;
+&lt;p&gt;已经开源：持续投入(非KPI项目)、合作共建、丰富功能和完善文档。&lt;/p&gt;
+&lt;p&gt;时间表：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;2024 Q1：实时数据接入、文档完善。&lt;/li&gt;
+&lt;li&gt;2024 Q2：资源预留。&lt;/li&gt;
+&lt;li&gt;2024 Q3：重调度、丰富Unit对象。&lt;/li&gt;
+&lt;li&gt;2024 Q4：多队列资源管理、DRF、FairShare等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Godel Scheduler通过两级框架实现乐观并发和统一调度&lt;/li&gt;
+&lt;li&gt;Dispatcher负责排队、分发和节点分区&lt;/li&gt;
+&lt;li&gt;Scheduler执行具体调度和抢占决策&lt;/li&gt;
+&lt;li&gt;Binder处理冲突检查、抢占操作和应用绑定&lt;/li&gt;
+&lt;li&gt;内部实践中展示高性能调度吞吐量&lt;/li&gt;
+&lt;li&gt;未来工作包括开源、社区维护和功能丰富化&lt;/li&gt;
+&lt;li&gt;发展方向涵盖资源预留、重调度和队列管理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;相关仓库&#34;&gt;相关仓库：&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/kubewharf/godel-scheduler&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;kubewharf/godel-scheduler&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;相关文章&#34;&gt;相关文章：&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.cncf.io/blog/2024/04/02/godel-scheduler-open-sourced-a-unified-scheduler-for-online-and-offline-workloads/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Gödel Scheduler open-sourced: a unified scheduler for online and offline workloads | CNCF&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;相关论文&#34;&gt;相关论文：&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Wu Xiang, Yakun Li, Yuquan Ren, Fan Jiang, Chaohui Xin, Varun Gupta, Chao Xiang, Xinyi Song, Meng Liu, Bing Li, Kaiyang Shao, Chen Xu, Wei Shao, Yuqi Fu, Wilson Wang, Cong Xu, Wei Xu, Caixue Lin, Rui Shi, and Yuming Liang. 2023. Gödel: Unified Large-Scale Resource Management and Scheduling at ByteDance. In Proceedings of the 2023 ACM Symposium on Cloud Computing (SoCC ‘23). Association for Computing Machinery, New York, NY, USA, 308–323. https://doi.org/10.1145/3620678.3624663&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Kubernetes 1.29 Mandala Updates</title>
+      <link>https://zhangyi.chat/post/kubernetes-mandala-updates/</link>
+      <pubDate>Thu, 25 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://zhangyi.chat/post/kubernetes-mandala-updates/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
