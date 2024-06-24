@@ -80,10 +80,10 @@ skills:
         description: ''
         percent: 60
         icon: person-simple-walk
-      - name: Cats
+      - name: Games
         description: ''
         percent: 100
-        icon: cat
+        icon: games
 
 
 
@@ -110,10 +110,7 @@ awards:
 ---
 
 ## 
-张怡, 资深后台研发工程师，7年DevOps领域(golang)平台研发经验、擅长从源码快速定位并解决问题。
+张怡, 7年Go语言平台研发经验。资深平台研发工程师，专注云计算领域。
 
-早期(2015-2020)专注在容器PaaS领域，在docker、k8s开源软件/系统上，积累了丰富的PaaS平台研发运维经验。
-
-曾在网易游戏、虎牙直播、腾讯担任后台研发工程师，对容器服务平台、serverless平台、平台工程方向均有实践经验。
 
 
